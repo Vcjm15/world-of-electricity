@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电的世界 · 从一颗电荷到一座电网</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F2F4F7;
+  --card:#FFFFFF;
+  --ink:#131E36;
+  --ink-2:#59678A;
+  --ink-3:#8A96B0;
+  --copper:#C06E38;
+  --copper-soft:#E8B07C;
+  --copper-wash:rgba(192,110,56,.10);
+  --volt:#1D6FE8;
+  --volt-wash:rgba(29,111,232,.10);
+  --flux:#7C5CD6;
+  --flux-wash:rgba(124,92,214,.10);
+  --live:#12B886;
+  --live-wash:rgba(18,184,134,.12);
+  --line:rgba(19,30,54,.13);
+  --line-soft:rgba(19,30,54,.07);
+  --grid:rgba(19,30,54,.045);
+  --r:14px;
+  --shadow:0 1px 2px rgba(19,30,54,.05), 0 14px 30px -18px rgba(19,30,54,.28);
+  --f-disp:"Space Grotesk", system-ui, "PingFang SC", "Noto Sans SC", sans-serif;
+  --f-body:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  font-family:var(--f-body);
+  color:var(--ink);
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px, transparent 1px),linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:26px 26px;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.85;
+  font-size:16.5px;
+}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:274px minmax(0,1fr);max-width:1200px;margin:0 auto;gap:0}
+.flow{min-width:0;padding:0 clamp(20px,4vw,64px) 140px;max-width:900px}
+
+/* ---------- spine (signature) ---------- */
+.spine{position:sticky;top:0;height:100vh;padding:40px 26px 26px 34px;display:flex;flex-direction:column}
+.spine .brand{display:flex;align-items:center;gap:11px;margin-bottom:34px}
+.brand .mark{width:34px;height:34px;border-radius:9px;background:var(--ink);position:relative;flex:0 0 auto;overflow:hidden}
+.brand .mark svg{position:absolute;inset:0;width:100%;height:100%}
+.brand .t{font-family:var(--f-disp);font-weight:600;font-size:15px;letter-spacing:.01em;line-height:1.25}
+.brand .t small{display:block;font-family:var(--f-mono);font-weight:400;font-size:10px;color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase}
+
+.rail{position:relative;flex:1;min-height:0}
+.rail::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line-soft);border-radius:2px}
+.rail .progress{position:absolute;left:9px;top:6px;width:2px;background:linear-gradient(var(--copper),var(--copper-soft));border-radius:2px;transition:height .25s ease}
+.rail .packet{position:absolute;left:9px;width:11px;height:11px;margin-left:-4.5px;border-radius:50%;background:var(--copper);box-shadow:0 0 0 4px var(--copper-wash),0 0 14px rgba(192,110,56,.55);transition:top .3s cubic-bezier(.4,1.3,.5,1)}
+.rail .packet::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--copper-soft);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.9);opacity:0}}
+.navlist{list-style:none;display:flex;flex-direction:column;gap:2px}
+.navlist li{position:relative}
+.navlist a{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink-3);padding:8px 0;transition:color .2s}
+.navlist .node{position:relative;z-index:1;width:20px;height:20px;border-radius:50%;background:var(--paper);border:2px solid var(--line);flex:0 0 auto;transition:.25s;display:grid;place-items:center;font-family:var(--f-mono);font-size:9px;color:transparent}
+.navlist .lbl{font-size:13.5px;font-weight:500}
+.navlist a:hover{color:var(--ink)}
+.navlist a.done .node{border-color:var(--copper);background:var(--copper-wash)}
+.navlist a.active{color:var(--ink)}
+.navlist a.active .node{border-color:var(--copper);background:var(--copper);box-shadow:0 0 0 5px var(--copper-wash)}
+.navlist a.active .lbl{font-weight:700}
+.spine .foot{margin-top:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.04em;line-height:1.7;padding-top:20px}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 20px}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--copper);font-weight:500;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:26px;height:1.5px;background:var(--copper);display:inline-block}
+h1{font-family:var(--f-disp);font-weight:700;font-size:clamp(38px,7vw,68px);line-height:1.02;letter-spacing:-.02em;margin:20px 0 0}
+h1 .dim{color:var(--ink-3)}
+.lede{font-size:19px;color:var(--ink-2);max-width:34em;margin-top:22px;line-height:1.8}
+.hero-note{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.pill{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--ink-2);border:1px solid var(--line);border-radius:100px;padding:6px 13px;background:rgba(255,255,255,.6)}
+
+/* ---------- chapters ---------- */
+.chap{padding:64px 0 8px;scroll-margin-top:20px}
+.chap + .chap{border-top:1px solid var(--line-soft);margin-top:22px}
+.chap-head{margin-bottom:26px}
+.chap-head h2{font-family:var(--f-disp);font-weight:700;font-size:clamp(27px,4.4vw,40px);line-height:1.1;letter-spacing:-.015em;margin-top:16px}
+.chap-head .sub{color:var(--ink-2);font-size:17px;margin-top:14px;max-width:36em}
+p{margin:16px 0;max-width:38em}
+.flow p{color:#26334f}
+strong{color:var(--ink);font-weight:650}
+em{font-style:normal;color:var(--copper);font-weight:600}
+.term{font-family:var(--f-mono);font-size:.92em;background:var(--volt-wash);color:var(--volt);padding:1px 6px;border-radius:5px;font-weight:500;white-space:nowrap}
+.term.cu{background:var(--copper-wash);color:var(--copper)}
+.term.fl{background:var(--flux-wash);color:var(--flux)}
+.term.gr{background:var(--live-wash);color:#0B8F6B}
+code{font-family:var(--f-mono);font-size:.9em;background:rgba(19,30,54,.06);padding:1px 6px;border-radius:5px}
+h3{font-family:var(--f-disp);font-weight:600;font-size:21px;margin:34px 0 4px;letter-spacing:-.01em}
+h4{font-family:var(--f-disp);font-weight:600;font-size:16.5px;margin:24px 0 2px;color:var(--ink)}
+.lead-in{font-weight:600}
+
+/* pull quote / key idea */
+.key{border-left:3px solid var(--copper);background:linear-gradient(90deg,var(--copper-wash),transparent 70%);padding:14px 20px;border-radius:0 10px 10px 0;margin:24px 0;font-size:17.5px;color:var(--ink)}
+.key b{font-weight:700}
+
+/* formula card */
+.eq{font-family:var(--f-mono);background:var(--ink);color:#EBEFF7;border-radius:var(--r);padding:18px 22px;margin:22px 0;display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;box-shadow:var(--shadow)}
+.eq .f{font-size:23px;font-weight:500;color:#fff;letter-spacing:.01em}
+.eq .f .v{color:#7FA9FF}.eq .f .c{color:var(--copper-soft)}.eq .f .g{color:#5BE3B4}.eq .f .u{color:#C79BF0}
+.eq .note{font-family:var(--f-body);font-size:13.5px;color:#9AA7C0;line-height:1.55;flex:1;min-width:180px}
+.eq .note b{color:#D7DEEE;font-weight:500}
+
+/* list */
+ul.clean{list-style:none;margin:18px 0;display:flex;flex-direction:column;gap:11px;max-width:40em}
+ul.clean li{padding-left:26px;position:relative;color:#26334f}
+ul.clean li::before{content:"";position:absolute;left:4px;top:.72em;width:7px;height:7px;border-radius:2px;background:var(--copper);transform:rotate(45deg)}
+
+/* ---------- lab (interactive) widget ---------- */
+.lab{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin:30px 0;overflow:hidden}
+.lab-bar{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line-soft);background:rgba(242,244,247,.7)}
+.lab-bar .dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 3px var(--live-wash)}
+.lab-bar .ttl{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.lab-bar .hint{margin-left:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3)}
+.lab-stage{position:relative;background:
+  radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0) 0 0/22px 22px,
+  linear-gradient(180deg,#FBFCFE,#F4F6FA)}
+.lab-stage canvas{display:block;width:100%;height:auto}
+.lab-ctrl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:15px 18px;border-top:1px solid var(--line-soft);background:rgba(242,244,247,.5)}
+.ctrl{display:flex;align-items:center;gap:11px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.ctrl label{letter-spacing:.03em;white-space:nowrap}
+.ctrl .val{color:var(--ink);font-weight:600;min-width:52px;display:inline-block;text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;width:132px;height:4px;border-radius:4px;background:var(--line);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--card);border:2.5px solid var(--copper);box-shadow:0 1px 4px rgba(19,30,54,.25);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--card);border:2.5px solid var(--copper);box-shadow:0 1px 4px rgba(19,30,54,.25);cursor:pointer}
+.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.03em;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 15px;border-radius:9px;cursor:pointer;transition:.15s;font-weight:500}
+.btn:hover{border-color:var(--copper);color:var(--copper);background:var(--copper-wash)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:var(--copper);border-color:var(--copper);color:#fff}
+.lab-readout{display:flex;flex-wrap:wrap;gap:24px;padding:16px 18px 20px;border-top:1px solid var(--line-soft)}
+.stat{display:flex;flex-direction:column;gap:1px;min-width:88px}
+.stat .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.stat .v{font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--ink);line-height:1.15}
+.stat .v .u{font-size:12px;color:var(--ink-3);margin-left:3px;font-weight:400}
+.stat.v .v{color:var(--volt)}.stat.c .v{color:var(--copper)}.stat.g .v{color:#0B8F6B}.stat.f .v{color:var(--flux)}
+.lab-cap{padding:13px 18px 16px;font-size:13.5px;color:var(--ink-2);border-top:1px solid var(--line-soft);background:rgba(242,244,247,.4)}
+
+/* ---------- device tabs ---------- */
+.devices{display:flex;gap:8px;flex-wrap:wrap;padding:16px 18px 0}
+.chip{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink-2);padding:7px 13px;border-radius:100px;cursor:pointer;transition:.15s}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dev-panel{display:none;padding:16px 18px 20px}
+.dev-panel.on{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:center}
+@media(max-width:720px){.dev-panel.on{grid-template-columns:1fr}}
+.dev-fig{background:linear-gradient(180deg,#FBFCFE,#F4F6FA);border:1px solid var(--line-soft);border-radius:12px;padding:14px;background-image:radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0);background-size:22px 22px}
+.dev-fig svg{width:100%;height:auto;display:block}
+.dev-txt h4{margin-top:0}
+.dev-txt p{font-size:14.5px;line-height:1.8;max-width:none}
+.dev-txt .steps{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.dev-txt .steps li{position:relative;padding-left:24px;font-size:14px;color:#26334f}
+.dev-txt .steps li::before{content:counter(step);counter-increment:step;position:absolute;left:0;top:0;font-family:var(--f-mono);font-size:10px;color:var(--copper);border:1px solid var(--copper);border-radius:50%;width:16px;height:16px;display:grid;place-items:center;background:var(--copper-wash);font-weight:600;line-height:1}
+.dev-txt .steps{counter-reset:step}
+.dev-txt .steps li::before{top:.28em}
+
+/* ---------- spectrum ---------- */
+.spectrum-legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:14px 18px;border-top:1px solid var(--line-soft)}
+.lg{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2)}
+.lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* ---------- summary map ---------- */
+.mapwrap{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin:28px 0}
+.mapwrap svg{width:100%;height:auto;display:block}
+
+/* ---------- footer ---------- */
+.done{margin-top:60px;padding-top:34px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.done .big{font-family:var(--f-disp);font-size:26px;color:var(--ink);font-weight:700;letter-spacing:-.01em;margin-bottom:10px}
+
+/* ---------- responsive ---------- */
+.mobilebar{display:none}
+@media(max-width:880px){
+  .app{grid-template-columns:1fr}
+  .spine{display:none}
+  .mobilebar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;background:rgba(242,244,247,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft);padding:11px 18px}
+  .mobilebar .mark{width:26px;height:26px;border-radius:7px;background:var(--ink);flex:0 0 auto}
+  .mobilebar .t{font-family:var(--f-disp);font-weight:600;font-size:14px}
+  .mobilebar select{margin-left:auto;font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 10px}
+  .flow{padding:0 20px 100px}
+  .hero{padding:44px 0 10px}
+  h1{font-size:clamp(34px,11vw,48px)}
+}
+:focus-visible{outline:2.5px solid var(--volt);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="mobilebar">
+  <div class="mark"></div>
+  <div class="t">电的世界</div>
+  <select id="mobileNav" aria-label="跳转章节"></select>
+</div>
+<div class="app">
+  <aside class="spine">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 34 34"><path d="M17 5 L27 12 L27 22 L17 29 L7 22 L7 12 Z" fill="none" stroke="#C06E38" stroke-width="1.6"/><path d="M12 17 h10 M17 12 v10" stroke="#E8B07C" stroke-width="1.6" stroke-linecap="round"/><circle cx="17" cy="17" r="2.4" fill="#E8B07C"/></svg>
+      </div>
+      <div class="t">电的世界<small>Charges → Grid</small></div>
+    </div>
+    <nav class="rail">
+      <div class="progress" id="railProgress"></div>
+      <div class="packet" id="railPacket" style="top:0"></div>
+      <ul class="navlist" id="navList"></ul>
+    </nav>
+    <div class="foot">一份关于电的互动读本<br>直觉优先 · 公式克制</div>
+  </aside>
+  <main class="flow">
+    <header class="hero">
+      <div class="eyebrow">互动读本 · 电磁学入门</div>
+      <h1>电的世界<br><span class="dim">从一颗电荷，到一座电网</span></h1>
+      <p class="lede">你不需要会解方程，也能真正理解电。这份读本不从公式出发，而是从你手上那点静电、墙上那个插座、口袋里那部手机出发，一层层往回拆，直到拆到"电子"这一层。看到最后，你会发现家里每一件带电的东西，其实都在讲同一件事。</p>
+      <div class="hero-note">
+        <span class="pill">零基础友好</span>
+        <span class="pill">6 个动手实验</span>
+        <span class="pill">从电荷 → 电网</span>
+        <span class="pill">公式只留最关键的几个</span>
+      </div>
+    </header>
+
+    <!-- ============ CH1 ============ -->
+    <section class="chap" id="ch1" data-nav="电是什么" data-num="01">
+      <div class="chap-head">
+        <div class="eyebrow">第一章 · 电荷</div>
+        <h2>电到底是什么</h2>
+        <p class="sub">在聊电压、电流之前，先认识那个真正在动的东西——电子。它是这本书里唯一的主角。</p>
+      </div>
+
+      <p>你身边的一切——空气、桌子、你自己的手——都是由原子堆出来的。而原子这玩意儿，可以粗暴地理解成一个迷你太阳系：中间是一个很重、很结实的核，外面飘着一群又小又轻的电子。</p>
+
+      <p>这里藏着一个奇怪的事实，后面所有章节都建立在它之上：<strong>原子核带正电，电子带负电。</strong>注意，"电"不是一种可以倒出来喝的东西，它是物质自带的一种性质，就像"质量"或者"温度"一样。而这种性质只有两种相反的版本——正和负。</p>
+
+      <div class="key">
+        <b>同号相斥，异号相吸。</b>这是电世界里唯一一条你真正需要记住的规则。两个正电荷互相推开，两个负电荷也互相推开，而一正一负会互相吸引。就这一条，撑起了后面全部的电压、电流、闪电和电动机。
+      </div>
+
+      <p>正常情况下，一个原子里的正电和负电数量正好相等，于是它整体是"中性"的，对外不显电性。但电子这群小家伙里，最外圈的那几个绑得并不牢。在<em>金属</em>里，它们松到可以直接脱离原子、在整块金属里到处乱跑——这就是为什么金属能导电。而在<em>塑料、玻璃、橡胶</em>里，电子被牢牢锁住，跑不动，所以它们不导电，我们叫它<strong>绝缘体</strong>。</p>
+
+      <h3>那静电是怎么来的？</h3>
+
+      <p>当你摩擦两个东西时，其实是在硬生生地把电子从一种材料"蹭"到另一种材料上。失去电子的那边，正电就多出来了，于是带正电；抢到电子的那边，负电多出来了，于是带负电。接下来，异号相吸的规则开始发挥作用。</p>
+
+      <p>冬天脱毛衣那一连串噼啪声、摸门把手的那一下刺痛、用气球蹭头发后头发会竖起来——全都是同一件事：<strong>电荷被摩擦搬了家。</strong>下面这个实验台，让你亲手搬一次。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 摩擦起电</span><span class="hint">点击「摩擦」给气球充负电</span></div>
+        <div class="lab-stage"><canvas id="staticCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <button class="btn primary" id="rubBtn">摩擦气球</button>
+          <button class="btn" id="resetStatic">放回桌上</button>
+          <div class="ctrl"><label>残余电荷</label><span class="val" id="chargeVal">0.0</span></div>
+        </div>
+        <div class="lab-readout">
+          <div class="stat"><span class="k">气球状态</span><span class="v" id="balloonState" style="font-size:17px">中性</span></div>
+          <div class="stat c"><span class="k">气球电荷</span><span class="v" id="chargeSign">－0<span class="u">e</span></span></div>
+        </div>
+        <div class="lab-cap">你每点一次"摩擦"，就模拟把一批电子从毛衣蹭到气球上。气球带负电后，桌面上的小纸屑就会被吸引——因为异号相吸。擦掉电荷（"放回桌上"），吸引立刻消失。</div>
+      </div>
+
+      <h3>但静电不会"流"</h3>
+
+      <p>看到这里你可能觉得：既然电荷能跑，那电不就"流动"起来了吗？还差两样东西。一是要有一条<strong>能让电荷通行的路</strong>（比如一根铜线），二是要有一个<strong>持续推着电荷往前走的力量</strong>。少了任何一样，电荷只会原地抖一抖，就像你蹭气球时那样——热闹一下，然后停下。</p>
+
+      <p>那个"持续推的力量"，就是下一章的主角：<em>电压</em>。</p>
+    </section>
+    <!-- ============ CH2 ============ -->
+    <section class="chap" id="ch2" data-nav="电压·电流·电阻" data-num="02">
+      <div class="chap-head">
+        <div class="eyebrow">第二章 · 三个基本量</div>
+        <h2>电压、电流、电阻</h2>
+        <p class="sub">电学最核心的三个词，其实对应三个你天天在用的直觉：水压、水流量、管子粗细。</p>
+      </div>
+
+      <p>要让电荷持续流动，得有一条路，还得有个推力。把电想象成水在管道里流，是入门阶段最好用的画面——只要记住它什么时候会不准确。</p>
+
+      <h3>电压：那个"高度差"</h3>
+
+      <p>水往低处流，是因为高处和低处之间有个<em>高度差</em>。水从高处落下，能把这份"高度差"换成能量——推动水车、发电。电也一样：电荷从"电势高"的地方流向"电势低"的地方，这个高低的差别就是<strong>电压</strong>。</p>
+
+      <p>更准确地说，<span class="term">电压</span>衡量的是"每一点电荷从这里到那里，能释放出多少能量"。所以电压的单位是<strong>伏特</strong>，而它真正的含义是"能量除以电荷"。这也是为什么一节干电池只有 1.5 伏，而墙上插座是 220 伏——插座那头的"落差"要大得多。</p>
+
+      <div class="key">
+        <b>电压不"存在"于某个点上，它永远存在于两点之间。</b>问"这根线电压多少"是没有意义的，得问"这根线相对那根线电压多少"。就像高度也要问"相对海平面还是相对地面"。
+      </div>
+
+      <h3>电流：每秒有多少电荷在通过</h3>
+
+      <p>光有落差还不够，你还得知道"每秒有多少水在流"。这就是<span class="term cu">电流</span>，单位是<strong>安培</strong>。它是实实在在的流量——每秒钟通过某个截面的电荷有多少。</p>
+
+      <p>一个反直觉但很重要的点：<strong>电流其实不是"电"在跑，而是电子在慢慢挪。</strong>真正流动的电子速度很慢（每秒几毫米），但把"开灯"这个信号传过去却几乎是瞬时的——因为整根导线里的电子像一串挤在一起的小球，你从这头一推，那头立刻就顶出去了。开关一合，全线路的电子同时被推动。</p>
+
+      <h3>电阻：路有多难走</h3>
+
+      <p>同样粗细的水管，有的顺滑，有的塞满了石头。<span class="term fl">电阻</span>就是导线的"难走程度"，单位是<strong>欧姆</strong>。又细又长的导线、发热丝、灯丝——电阻大；粗铜线电阻小，几乎不挡路。</p>
+
+      <h3>三者关系：欧姆定律</h3>
+
+      <p>把这三样凑起来，你会发现一个非常自然的规律：推力越大，流得越多；阻力越大，流得越少。写成一句话就是欧姆定律。</p>
+
+      <div class="eq">
+        <span class="f"><span class="v">I</span> = <span class="v">V</span> / <span class="c">R</span></span>
+        <span class="note"><b>I</b> 电流（安培，A）＝ <b>V</b> 电压（伏特，V）÷ <b>R</b> 电阻（欧姆，Ω）。想提高电流，要么加电压，要么减电阻。</span>
+      </div>
+
+      <h3>真正被"消耗"的，是功率</h3>
+
+      <p>电流流过电阻，不是白白流过的——它会把电能转成别的东西：发热、发光。这个"每秒转化掉多少能量"叫<span class="term gr">功率</span>，单位<strong>瓦特</strong>。点亮灯、烧热水、带动电机，靠的都是功率。</p>
+
+      <div class="eq">
+        <span class="f"><span class="g">P</span> = <span class="v">V</span> × <span class="v">I</span></span>
+        <span class="note"><b>P</b> 功率（瓦，W）＝ 电压 × 电流。这就是为什么高功率的电器（空调、电热水器）要么电压高，要么电流大——而大电流意味着要更粗的电线，也更容易发热。</span>
+      </div>
+
+      <p>现在，把这三个旋钮交到你手上，自己转一转。你会立刻看懂它们之间怎么互相拉扯。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 欧姆定律</span><span class="hint">拖动两个滑块观察变化</span></div>
+        <div class="lab-stage"><canvas id="circuitCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <div class="ctrl"><label>电压 V</label><input type="range" id="voltSlider" min="1" max="12" step="0.5" value="6"><span class="val" id="voltVal">6.0 V</span></div>
+          <div class="ctrl"><label>电阻 R</label><input type="range" id="resSlider" min="1" max="20" step="0.5" value="6"><span class="val" id="resVal">6.0 Ω</span></div>
+          <button class="btn" id="waterToggle">切换水流类比</button>
+        </div>
+        <div class="lab-readout">
+          <div class="stat v"><span class="k">电压 V</span><span class="v" id="roVolt">6.0<span class="u">V</span></span></div>
+          <div class="stat c"><span class="k">电流 I</span><span class="v" id="roAmp">1.00<span class="u">A</span></span></div>
+          <div class="stat g"><span class="k">功率 P</span><span class="v" id="roPow">6.0<span class="u">W</span></span></div>
+          <div class="stat"><span class="k">灯泡</span><span class="v" id="roBri" style="font-size:17px">正常</span></div>
+        </div>
+        <div class="lab-cap">铜色的小点就是流动的电荷。电流越大，点跑得越快、灯泡越亮。试试把电阻拉到最大——电流骤降，灯几乎熄灭；再把电压拉满，灯又爆亮。这就是 <code>I = V/R</code> 在你眼前发生。</div>
+      </div>
+
+      <h3>顺便记住两个词：直流和交流</h3>
+
+      <p>电荷总是朝同一个方向流，叫<strong>直流</strong>（电池就是这种），用 DC 表示。电荷来回反复改变方向、每秒掉头几十次，叫<strong>交流</strong>（墙上插座就是这种）。中国插座每秒掉头 50 次，写作 220V / 50Hz。为什么电网要用交流？这个问题留到第六章——答案藏在一个很妙的装置里。</p>
+    </section>
+    <!-- ============ CH3 ============ -->
+        <section class="chap" id="ch3" data-nav="电与磁" data-num="03">
+      <div class="chap-head">
+        <div class="eyebrow">第三章 · 一场大统一</div>
+        <h2>电和磁，其实是一件事</h2>
+        <p class="sub">这是全书的枢纽。我们放慢一点走：先老老实实认识"磁"本身，再让电流闯进来，最后你会看到电动机、发电机、变压器，其实共享着同一套机关。</p>
+      </div>
+
+      <p class="lead-in">先别急着谈电流。要理解电和磁的关系，得先认识"磁"——它比你以为的要普遍得多，也神秘得多。</p>
+
+      <h3>磁场：一张看不见的地图</h3>
+
+      <p>你小时候玩过的磁铁，有两副面孔。靠近另一块磁铁时，有时候"啪"地被吸住，有时候怎么按都推着弹开。规律和上章的电荷一模一样：<strong>同名磁极相斥，异名磁极相吸</strong>。注意——"同号相斥、异号相吸"这条规则，在磁这里原样重演了一遍。这不是巧合，记住这个感觉，后面会揭晓。</p>
+
+      <p>更奇怪的是：两块磁铁明明没有碰到，中间隔着一层空气，吸力却照样存在。于是物理学家说，磁铁周围的空间里弥漫着一种看不见的东西。你摸不到它，但只要把小磁针放进去，它立刻会转到某个固定的方向——空间里每一点，都有一个"该指向哪"的答案。这就像一张看不见的地图。我们给这张地图起了个名字，叫<em>磁场</em>。</p>
+
+      <p>怎么把这张地图画出来？在磁铁上撒一把铁屑，它们会自己排成一圈圈的弧线。这些线叫<strong>磁力线</strong>：它们从磁铁的 N 极（北极）出发，兜一个大圈，回到 S 极（南极），再穿过磁铁内部。有一个细节很重要——<em>线越密的地方，磁场越强</em>。磁铁两端最密，所以两极最强；中间稀稀拉拉，所以中间最弱。</p>
+
+      <div class="key">
+        <b>磁场不是磁铁的专利。</b>地球本身就是一块大磁铁，它的磁场让指南针永远指向南北——这也是中国人几千年前就用来导航的东西。但这一章真正要讲的，是一个更惊人的事实：<b>电流，也能造出磁场。</b>
+      </div>
+
+      <h3>1820 年，一根导线让磁针动了</h3>
+
+      <p>想象你是 1820 年哥本哈根的一名学生。奥斯特教授正在讲电学，讲台上摆着一根导线、一节电池、一枚小磁针。他把导线平行放在磁针上方，接通电流的那一瞬间——磁针轻轻抖了一下，然后转动，停在一个新方向上。断开电流，磁针又慢慢转回去。</p>
+
+      <p>在场的人当时未必意识到这一刻的分量。但人类第一次看见：<strong>电和磁之间，有某种看不见的联系。</strong>注意，电并没有"碰"到磁针——导线离磁针还有一段距离。真相是：导线一旦有电流通过，它周围的空间就凭空多出了一圈一圈的磁场，磁针只是乖乖地跟着这片新磁场转了方向。</p>
+
+      <div class="key">
+        <b>有电流，就一定有磁场。</b>而且这个磁场不是直着往外射的，它是<b>一圈一圈绕着导线</b>的同心圆——像往水里丢石头荡开的涟漪，只不过它是绕着你那根线围起来的。
+      </div>
+
+      <p>那么这一圈圈到底朝哪个方向转？这里有个非常好用的口诀，叫<strong>右手法则</strong>：伸出右手，让拇指指向电流的方向，然后四指自然弯曲的方向，就是磁场绕行的方向。下面这个实验台，你可以亲手验证它。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 磁场方向</span><span class="hint">拖动小磁针 · 可翻转电流</span></div>
+        <div class="lab-stage"><canvas id="chWireCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <button class="btn primary" id="wireFlip">翻转电流方向</button>
+          <span class="ctrl" style="color:var(--ink-3)">把磁针拖到任意位置试试</span>
+        </div>
+        <div class="lab-readout">
+          <div class="stat v"><span class="k">电流方向</span><span class="v" id="wireDir" style="font-size:16px">射出纸面 ⊙</span></div>
+          <div class="stat f"><span class="k">磁场环绕</span><span class="v" id="wireField" style="font-size:16px">逆时针</span></div>
+          <div class="stat c"><span class="k">磁针指向</span><span class="v" id="wireNeedle" style="font-size:16px">—</span></div>
+        </div>
+        <div class="lab-cap">导线垂直穿过纸面，中心那个符号是它的横截面。紫色同心圆就是磁场。点"翻转电流方向"，磁场整个反过来。无论你把小磁针拖到哪里，它总是顺着当地的磁力线转——这就是右手法则在你眼前发生。</div>
+      </div>
+
+      <h3>想让磁场变强？把导线盘起来</h3>
+
+      <p>一根直导线周围的磁场，弱得几乎测不出来。聪明的办法是：把导线一圈一圈绕成弹簧的形状。每一圈都贡献一份磁场，方向又都一样，于是叠在一起，拧成一股又强又整齐的磁场——就像很多人朝同一个方向推一扇门，总比一个人推有力得多。</p>
+
+      <p>还能更狠。往线圈中间插一根<strong>铁芯</strong>（通常是软铁）。铁里面的分子容易被磁场的"指挥"排整齐，于是磁场能被放大几百倍。这就是<strong>电磁铁</strong>。</p>
+
+      <p>它有三个可以拧的旋钮：<strong>电流越大越强</strong>、<strong>圈数越多越强</strong>、<strong>塞一根铁芯强上很多</strong>。但它比普通磁铁多出来的、真正改变世界的能力是——<em>随开随有、随关随无，方向还能反</em>。门铃、继电器、工厂里吊废铁的电磁起重机、你车门上的锁，靠的都是这份"能随时开关"的自由。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 电磁铁</span><span class="hint">拖动滑块改变电流强度</span></div>
+        <div class="lab-stage"><canvas id="emCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <div class="ctrl"><label>电流</label><input type="range" id="emSlider" min="0" max="100" step="1" value="45"><span class="val" id="emVal">45%</span></div>
+          <button class="btn" id="emFlip">改变电流方向</button>
+        </div>
+        <div class="lab-readout">
+          <div class="stat c"><span class="k">磁场强度</span><span class="v" id="emField">中<span class="u">等</span></span></div>
+          <div class="stat f"><span class="k">左端极性</span><span class="v" id="emPoleL">N</span></div>
+          <div class="stat f"><span class="k">右端极性</span><span class="v" id="emPoleR">S</span></div>
+          <div class="stat"><span class="k">吸起的回形针</span><span class="v" id="emClips">7<span class="u">枚</span></span></div>
+        </div>
+        <div class="lab-cap">电流越大，磁场越强，能吸起的回形针越多。点"改变电流方向"，磁极会瞬间左右对调——这就是电磁铁比永久磁铁多出来的那份自由。</div>
+      </div>
+
+      <h3>反过来行不行？法拉第赌了十年</h3>
+
+      <p>奥斯特证明了"电生磁"。英国的法拉第看到这个结果后，脑中冒出一个执拗的念头：既然电能生磁，那反过来，<strong>磁能不能生电</strong>？如果能，人类就能靠磁铁发电，彻底摆脱电池。</p>
+
+      <p>他试了很多年都失败。直到 1831 年，他终于抓到了那个关键——问题不在于"有没有磁场"，而在于磁场有<b>没有在变化</b>。当他把磁铁插进线圈的瞬间，电流计指针猛地偏了一下；插着不动，指针回到零；拔出来的瞬间，指针又偏了，而且方向相反。</p>
+
+      <div class="key">
+        <b>只有"变化"才能生出电。</b>静止的磁场什么都不做。磁铁一动——进去、出来、转动——穿过线圈的磁场就变了，线圈里立刻涌出电流；动得越快，电流越大。今天全世界发的每一度电，几乎都靠这四个字：<em>变化生电</em>。
+      </div>
+
+      <p>自己拖一下磁铁，感受那个"只有动才有电"的瞬间。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 电磁感应</span><span class="hint">按住并左右拖动磁铁</span></div>
+        <div class="lab-stage"><canvas id="inductionCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <button class="btn primary" id="inductionFlip">翻转磁铁极性</button>
+          <span class="ctrl" style="color:var(--ink-3)">试试让磁铁停住不动</span>
+        </div>
+        <div class="lab-readout">
+          <div class="stat c"><span class="k">感应电流</span><span class="v" id="inductionVal" style="font-size:18px">无</span></div>
+          <div class="stat v"><span class="k">状态</span><span class="v" id="inductionState" style="font-size:14px;color:var(--ink-2)">磁铁静止</span></div>
+        </div>
+        <div class="lab-cap">磁铁静止时，电流计指针纹丝不动——哪怕它离线圈很近。只有拖动它（让穿过线圈的磁场发生变化）指针才会偏转，插进去和拔出来还会偏向相反的两侧。这就是发电机的全部秘密。</div>
+      </div>
+
+      <p>还有个细节值得留意：磁铁插进去和拔出来，电流方向是相反的——感应电流总是"不情愿"地反抗你正在做的那个改变。这条规律叫<strong>楞次定律</strong>，现在你只要记住这份"不情愿"就够了。</p>
+
+      <h3>最后一块拼图：磁场会推导线</h3>
+
+      <p>现在换个提问的角度。前面一直在问"电流周围有什么"。反过来问：如果把一根通电的导线，放进<em>别的</em>磁场里，会发生什么？答案是——<strong>它会被推。</strong></p>
+
+      <p>这个道理其实能自己推出来：导线通电后自己也产生磁场，两片磁场叠在一起，总有一边被加强、一边被削弱，导线就被从强的一边推向弱的一边。推力的方向同时取决于电流方向和磁场方向，用<strong>左手定则</strong>可以判断。</p>
+
+      <div class="key">
+        <b>到这里，你就集齐了三块拼图。</b>①电流生磁场；②变化的磁场生电流；③磁场会推通电导线。前两块负责"发电"，第三块负责"用电"。整个世界的有电设备，都是这三块的排列组合。
+      </div>
+
+      <h3>把三块拼图合起来 = 电动机</h3>
+
+      <p>现在我们用第三块拼图造一台电动机。单根导线的推力太小，把它绕成一个矩形线圈——线圈的两条边受到的推力方向正好相反，一个往前推、一个往后推，线圈就绕着中间转起来了。</p>
+
+      <p>麻烦的是：转过半圈之后，两条边互换了位置，推力会把它往回推，于是它只能晃到一半就卡住。解决的办法聪明得可爱——在恰好转过半圈的那个瞬间，用一个叫<strong>换向器</strong>的小开关，把电流方向掉个头。推力方向也跟着反过来，线圈于是能继续朝同一个方向转下去。这就是电动机。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 电动机</span><span class="hint">观察线圈如何被推着转</span></div>
+        <div class="lab-stage"><canvas id="motorCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <div class="ctrl"><label>电流</label><input type="range" id="motorSpeed" min="0" max="100" step="1" value="60"><span class="val" id="motorVal">60%</span></div>
+          <button class="btn" id="motorPause">暂停</button>
+        </div>
+        <div class="lab-readout">
+          <div class="stat c"><span class="k">转速</span><span class="v" id="motorRpm">—</span></div>
+          <div class="stat v"><span class="k">蓝色 = 电流方向</span><span class="v" style="font-size:13px;color:var(--ink-2)">每半圈翻转一次</span></div>
+        </div>
+        <div class="lab-cap">蓝色线圈里的电流方向每半圈被"换向器"翻转一次，使它始终被磁场往同一个方向推。这就是为什么电动机一旦通电就会持续转——它把两条电磁规律，变成了永不停歇的旋转。</div>
+      </div>
+
+      <h3>这一章的三条规律</h3>
+
+      <ul class="clean">
+        <li><strong>电生磁</strong> —— 电流周围一定有磁场（奥斯特，1820）。</li>
+        <li><strong>磁生电</strong> —— 变化的磁场能在导线里感生出电流（法拉第，1831）。</li>
+        <li><strong>磁推电</strong> —— 磁场会推动通电的导线（安培力）。</li>
+      </ul>
+
+      <p>记住这三条，你就握住了电气世界的钥匙。电动机是"磁推电"，发电机是"磁生电"，变压器是两者之间的搬运工，而电磁铁是"电生磁"。它们没有一个是新东西，只是同三条规律的不同排列。</p>
+    </section>
+    <!-- ============ CH4 ============ -->
+    <section class="chap" id="ch4" data-nav="拆解身边电器" data-num="04">
+      <div class="chap-head">
+        <div class="eyebrow">第四章 · 物体篇</div>
+        <h2>拆开你身边的五件东西</h2>
+        <p class="sub">你现在带着三把钥匙：电荷、电压电流电阻、电与磁。用它们，几乎能拆开家里一切带电的东西。点一下下面每件物品。</p>
+      </div>
+
+      <p>这一章不引入任何新原理。你会发现，越是复杂的东西，拆到最后，越只是把前三章那几条规律一遍遍地排列组合。真正的工程，全在"怎么组合得更好"上。</p>
+
+      <div class="lab" style="padding-top:2px">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">拆解台 · 选一件东西</span></div>
+        <div class="devices" id="deviceTabs">
+          <button class="chip active" data-dev="0">手机充电器</button>
+          <button class="chip" data-dev="1">手机</button>
+          <button class="chip" data-dev="2">LED 灯</button>
+          <button class="chip" data-dev="3">冰箱</button>
+          <button class="chip" data-dev="4">扬声器</button>
+        </div>
+
+        <!-- 0 充电器 -->
+        <div class="dev-panel on" data-panel="0">
+          <div class="dev-fig">
+            <svg viewBox="0 0 420 230" role="img" aria-label="充电器内部结构示意">
+              <rect x="16" y="70" width="86" height="90" rx="10" fill="#fff" stroke="#131E36" stroke-width="1.4"/>
+              <text x="59" y="118" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#59678A">插座</text>
+              <text x="59" y="134" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#59678A">220V AC</text>
+              <!-- primary coil -->
+              <path d="M120 92 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#C06E38" stroke-width="2.4"/>
+              <path d="M120 112 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#C06E38" stroke-width="2.4"/>
+              <path d="M120 132 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#C06E38" stroke-width="2.4"/>
+              <!-- core -->
+              <rect x="186" y="86" width="36" height="60" rx="4" fill="#EEF1F6" stroke="#8A96B0" stroke-width="1.2"/>
+              <!-- secondary coil -->
+              <path d="M232 96 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#1D6FE8" stroke-width="2.4"/>
+              <path d="M232 116 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#1D6FE8" stroke-width="2.4"/>
+              <path d="M232 136 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none" stroke="#1D6FE8" stroke-width="2.4"/>
+              <path d="M112 112 h8" stroke="#131E36" stroke-width="1.4"/>
+              <path d="M300 116 h50" stroke="#131E36" stroke-width="1.4"/>
+              <rect x="350" y="96" width="54" height="40" rx="8" fill="#fff" stroke="#131E36" stroke-width="1.4"/>
+              <text x="377" y="120" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#59678A">5V DC</text>
+              <text x="160" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C06E38">变压器</text>
+              <text x="262" y="172" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#1D6FE8">降压</text>
+              <text x="200" y="200" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">+ 整流二极管把交流变直流</text>
+            </svg>
+          </div>
+          <div class="dev-txt">
+            <h4>手机充电器</h4>
+            <p>它其实是两个装置塞进一个小盒子里：一个<em>变压器</em>，把 220V 交流降到 5V；一组<em>整流电路</em>，把交流变成手机能用的直流。整个过程没有任何旋转的零件，纯靠电磁感应和水一样的电子流动完成。</p>
+            <ol class="steps">
+              <li>插座送来 220V、每秒换向 50 次的交流电</li>
+              <li>高频开关先把它切碎、经由变压器线圈降压</li>
+              <li>二极管把来回摆动的电流掰成单向的直流</li>
+              <li>输出 5V 稳定直流，喂给手机电池</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 1 手机 -->
+        <div class="dev-panel" data-panel="1">
+          <div class="dev-fig">
+            <svg viewBox="0 0 420 230" role="img" aria-label="手机内部结构示意">
+              <rect x="140" y="18" width="140" height="194" rx="20" fill="#fff" stroke="#131E36" stroke-width="1.6"/>
+              <rect x="152" y="34" width="116" height="120" rx="8" fill="#EEF4FF" stroke="#1D6FE8" stroke-width="1.2"/>
+              <text x="210" y="92" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#1D6FE8">触摸屏</text>
+              <rect x="152" y="162" width="116" height="26" rx="6" fill="#FFF4E8" stroke="#C06E38" stroke-width="1.2"/>
+              <text x="210" y="180" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C06E38">锂电池 3.7V</text>
+              <circle cx="210" cy="140" r="14" fill="#F3ECFF" stroke="#7C5CD6" stroke-width="1.2"/>
+              <text x="210" y="144" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#7C5CD6">芯片</text>
+              <path d="M60 60 q30 -20 60 0" fill="none" stroke="#12B886" stroke-width="1.6" stroke-dasharray="3 3"/>
+              <path d="M60 84 q30 -20 60 0" fill="none" stroke="#12B886" stroke-width="1.6" stroke-dasharray="3 3"/>
+              <path d="M60 108 q30 -20 60 0" fill="none" stroke="#12B886" stroke-width="1.6" stroke-dasharray="3 3"/>
+              <text x="58" y="140" font-family="IBM Plex Mono" font-size="10" fill="#12B886">无线电波</text>
+              <text x="360" y="60" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">→</text>
+            </svg>
+          </div>
+          <div class="dev-txt">
+            <h4>手机</h4>
+            <p>一部手机是一整套微缩的电磁世界：<em>电池</em>用化学能维持电压、推动电流；<em>芯片</em>里上亿个微型开关用电流表示 0 和 1；<em>触摸屏</em>靠你手指改变的一点点电容来定位；而它和外界的一切联系，都走<em>天线</em>——那是第五章要讲的电磁波。</p>
+            <ol class="steps">
+              <li>锂电池用化学反应维持约 3.7V 的电压</li>
+              <li>芯片里电流的通/断 = 1/0，运算就是开关的舞蹈</li>
+              <li>屏幕、振动马达、扬声器各自把电变成光、动、声</li>
+              <li>天线把电流的振荡变成电磁波，发向基站</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 2 LED -->
+        <div class="dev-panel" data-panel="2">
+          <div class="dev-fig">
+            <svg viewBox="0 0 420 230" role="img" aria-label="LED 发光原理示意">
+              <rect x="96" y="60" width="120" height="46" rx="4" fill="#EEF4FF" stroke="#1D6FE8" stroke-width="1.3"/>
+              <text x="156" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#1D6FE8">N 型 (多电子)</text>
+              <rect x="216" y="60" width="120" height="46" rx="4" fill="#FFF4E8" stroke="#C06E38" stroke-width="1.3"/>
+              <text x="276" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C06E38">P 型 (多空穴)</text>
+              <rect x="210" y="60" width="12" height="46" fill="#F3ECFF" stroke="#7C5CD6" stroke-width="1.3"/>
+              <circle cx="216" cy="52" r="4" fill="#1D6FE8"/>
+              <circle cx="216" cy="52" r="10" fill="none" stroke="#1D6FE8" stroke-opacity=".35"/>
+              <text x="252" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7C5CD6">光子</text>
+              <path d="M96 106 h-30" stroke="#131E36" stroke-width="1.4"/><path d="M336 106 h30" stroke="#131E36" stroke-width="1.4"/>
+              <text x="60" y="110" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">+</text>
+              <text x="372" y="110" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">−</text>
+              <text x="216" y="150" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">电子与空穴在中间相遇 → 释放出光</text>
+              <text x="216" y="176" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">不发热，几乎全变成光</text>
+            </svg>
+          </div>
+          <div class="dev-txt">
+            <h4>LED 灯</h4>
+            <p>老式白炽灯是"烧红一根丝"发光，大部分电都浪费成了热。LED 走的完全是另一条路：它把两种处理过的半导体贴在一起，电子从一边跳到另一边时，会<em>直接吐出一个光子</em>。电流变光，中间几乎不经过"热"。这就是它又亮又省电的原因。</p>
+            <ol class="steps">
+              <li>一块半导体掺成"多电子"，另一块掺成"多空穴"</li>
+              <li>通上电流，电子被推着越过中间的边界</li>
+              <li>电子"落进"空穴，多余的能量以一个光子的形式放出</li>
+              <li>不同材料放出不同颜色的光——红、绿、蓝，凑成白光</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 3 冰箱 -->
+        <div class="dev-panel" data-panel="3">
+          <div class="dev-fig">
+            <svg viewBox="0 0 420 230" role="img" aria-label="冰箱制冷循环示意">
+              <rect x="60" y="40" width="120" height="150" rx="8" fill="#F6F9FF" stroke="#1D6FE8" stroke-width="1.3"/>
+              <text x="120" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#1D6FE8">蒸发器</text>
+              <text x="120" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8A96B0">(吸热·变冷)</text>
+              <rect x="240" y="40" width="120" height="150" rx="8" fill="#FFF3EC" stroke="#C06E38" stroke-width="1.3"/>
+              <text x="300" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C06E38">冷凝器</text>
+              <text x="300" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8A96B0">(放热·变热)</text>
+              <circle cx="210" cy="70" r="17" fill="#EEF1F6" stroke="#131E36" stroke-width="1.3"/>
+              <text x="210" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#131E36">压缩机</text>
+              <path d="M180 130 h30" stroke="#7C5CD6" stroke-width="1.6" marker-end="url(#ar)"/>
+              <path d="M240 170 h-30" stroke="#7C5CD6" stroke-width="1.6" marker-end="url(#ar)"/>
+              <defs><marker id="ar" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#7C5CD6"/></marker></defs>
+              <text x="210" y="215" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">制冷剂在两边来回搬运热量</text>
+            </svg>
+          </div>
+          <div class="dev-txt">
+            <h4>冰箱</h4>
+            <p>冰箱不"制造冷"，它只是把热量<em>搬出去</em>。听起来违反直觉，但它靠的是<em>压缩机的电动机</em>——也就是第三章那个转圈的东西——把一种制冷剂反复压缩、膨胀。压缩时它放热（冰箱背后那圈是热的），膨胀时它吸热（冰箱里面就变冷了）。</p>
+            <ol class="steps">
+              <li>电动机带动压缩机，把制冷剂气体压成高温高压</li>
+              <li>高温气体在背后盘管里放热，变成液体</li>
+              <li>液体冲到冰箱内部，压力骤降、急速膨胀吸热</li>
+              <li>吸走箱内热量，再回到压缩机——循环往复</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 4 扬声器 -->
+        <div class="dev-panel" data-panel="4">
+          <div class="dev-fig">
+            <svg viewBox="0 0 420 230" role="img" aria-label="扬声器原理示意">
+              <path d="M250 40 L120 20 L120 210 L250 190 Z" fill="#F4F6FA" stroke="#131E36" stroke-width="1.5"/>
+              <text x="100" y="118" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#59678A">振膜</text>
+              <rect x="266" y="92" width="70" height="26" rx="6" fill="#F3ECFF" stroke="#7C5CD6" stroke-width="1.3"/>
+              <text x="301" y="109" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#7C5CD6">永久磁铁</text>
+              <path d="M256 86 q-8 19 0 38" fill="none" stroke="#C06E38" stroke-width="2"/>
+              <path d="M264 84 q-9 21 0 42" fill="none" stroke="#C06E38" stroke-width="2"/>
+              <text x="210" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C06E38">音圈</text>
+              <path d="M206 88 h44" stroke="#1D6FE8" stroke-width="1.6" marker-end="url(#ar2)"/>
+              <path d="M250 124 h-44" stroke="#1D6FE8" stroke-width="1.6" marker-end="url(#ar2b)"/>
+              <defs>
+                <marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#1D6FE8"/></marker>
+                <marker id="ar2b" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#1D6FE8"/></marker>
+              </defs>
+              <path d="M118 40 q-24 -14 -46 -4" fill="none" stroke="#12B886" stroke-width="1.4" stroke-dasharray="3 3"/>
+              <path d="M118 110 q-30 0 -52 -8" fill="none" stroke="#12B886" stroke-width="1.4" stroke-dasharray="3 3"/>
+              <text x="48" y="36" font-family="IBM Plex Mono" font-size="10" fill="#12B886">声波</text>
+            </svg>
+          </div>
+          <div class="dev-txt">
+            <h4>扬声器（喇叭 / 耳机）</h4>
+            <p>扬声器是第三章"磁场推导线"的又一次登场。一个<em>音圈</em>固定在振膜上，泡在一块永久磁铁的磁场里。电流一变，线圈受到的推力方向就变，于是它带着振膜一进一出地抖动——空气被推成疏密相间的波纹，那就是<em>声音</em>。</p>
+            <ol class="steps">
+              <li>电流经过音圈，音圈周围产生磁场（电生磁）</li>
+              <li>音圈磁场与永久磁铁相互作用，被推着前后移动</li>
+              <li>电流方向随音乐每秒变化上万次，音圈就来回振动</li>
+              <li>振膜推动空气 → 声波传进你耳朵</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ CH5 ============ -->
+        <section class="chap" id="ch5" data-nav="电磁波与无线" data-num="05">
+      <div class="chap-head">
+        <div class="eyebrow">第五章 · 无线世界</div>
+        <h2>光、WiFi、5G，是同一种东西</h2>
+        <p class="sub">这一章其实只讲一件事，但它值得慢慢拆：当电荷不再乖乖待在导线里，而是被推得来回抖动时，会发生什么。走完这七步，无线世界就没有秘密了。</p>
+      </div>
+
+      <h3>第一步：什么样的电荷才会"辐射"？</h3>
+
+      <p>这是全章最需要慢慢嚼的一步。我们把电荷分成三种情况来看。</p>
+
+      <p><strong>情况一，电荷静止不动。</strong>它周围有一片静电场，稳稳地待着，不向任何方向传播。就像一颗铁球放在床单上，压出一个凹坑——但坑不会自己跑掉。</p>
+
+      <p><strong>情况二，电荷匀速直线运动（也就是稳定的直流电流）。</strong>它周围既有电场、又有磁场，但这些场像影子一样跟着它一起走，也不会脱手飞出去。稳定流淌的电流，是安静的。</p>
+
+      <p><strong>情况三，电荷被加速——被推着不断改变速度，来回振荡。</strong>这时奇妙的事情发生了：它周围的电场来不及平稳过渡，被"抖"出了一圈；这圈变化的电场又激发出变化的磁场；变化的磁场再激发出电场……</p>
+
+      <div class="key">
+        <b>只有被加速（或振荡）的电荷，才会向外辐射电磁波。</b>静止不辐射，匀速不辐射，唯有"被甩来甩去"的电荷，才会把能量以波的形式甩进空间。这三句话，是整章的地基。
+      </div>
+
+      <p>回头看看你已经学过的东西，会发现它们全都对得上号：天线里让电子来回振荡，于是辐射；微波炉让水分子剧烈震荡，分子也在不停地吸收和辐射；X 光机里电子猛地撞上金属靶、被狠狠刹停，于是辐射出 X 光。辐射的本质永远只有一句：<strong>电荷的运动状态被改变了。</strong></p>
+
+      <h3>第二步：这列波长什么样</h3>
+
+      <p>电磁波有一个非常规整的构造。在它前进的方向上，搭着两组互相垂直的"摇摆"：一组是<strong>电场</strong>，一组是<strong>磁场</strong>。两者都垂直于传播方向，像两根互相垂直的绳子一起向前晃——这叫<strong>横波</strong>。</p>
+
+      <p>更妙的是，它能自己养活自己：变化的电场生成磁场，变化的磁场生成电场，这对伙伴互相接力，一路自己往前跑，再也不需要任何导线，甚至不需要空气。阳光能穿过真空的宇宙到达地球，就是最好的证据。真空中它的速度是一个常数，叫<strong>光速 c</strong>，约每秒 30 万公里——绕地球七圈半，只要一秒。</p>
+
+      <h3>第三步：频率和波长，是同一列波的两副面孔</h3>
+
+      <p>既然速度恒定，那这列波唯一能变的，就是它"抖多快"。抖动的快慢叫<strong>频率</strong>（每秒振动多少次）；相邻两个波峰之间的距离叫<strong>波长</strong>。两者被一条简单关系锁死在一起：</p>
+
+      <div class="eq">
+        <span class="f"><span class="c">c</span> = <span class="v">λ</span> × <span class="g">f</span></span>
+        <span class="note">速度 c 恒定，所以波长 λ 和频率 f 此消彼长：抖得越快（f 越大），波峰挨得越近（λ 越小）。</span>
+      </div>
+
+      <p>代入几个你身边的数字，立刻就有感觉了：FM 广播大约 100 兆赫兹，波长约 3 米——和一张餐桌差不多。WiFi 的 2.4 吉赫兹，波长约 12.5 厘米——比手掌还短。而可见光的波长只有约 500 纳米，比细菌还小上千倍。频率越高，波长越短，这列波也越"细"、每个波包携带的能量越猛。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 电磁波谱</span><span class="hint">拖动滑块，从无线电一路滑到伽马射线</span></div>
+        <div class="lab-stage"><canvas id="waveCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <div class="ctrl"><label>频率</label><input type="range" id="waveSlider" min="0" max="100" step="1" value="28"><span class="val" id="waveVal">—</span></div>
+        </div>
+        <div class="lab-readout">
+          <div class="stat f"><span class="k">波段</span><span class="v" id="waveBand" style="font-size:18px">无线电</span></div>
+          <div class="stat v"><span class="k">波长 λ</span><span class="v" id="waveLambda">—</span></div>
+          <div class="stat c"><span class="k">速度</span><span class="v">c<span class="u">光速</span></span></div>
+        </div>
+        <div class="lab-cap">蓝色是电场、紫色是磁场，两者互相垂直、一起前进。顶部那条彩虹条就是全部电磁波谱，箭头标出你当前的位置。注意可见光只是极窄的一条缝——你眼睛能看见的整个彩色世界，只占了这张表中间不到千分之一的宽度。</div>
+      </div>
+
+      <h3>第四步：一张频率表，就是整个世界</h3>
+
+      <p>把所有频率从低到高排成一列，就得到<strong>电磁波谱</strong>：无线电波、微波、红外线、可见光、紫外线、X 射线、伽马射线。它们本质完全一样，只是抖得快慢不同。</p>
+
+      <ul class="clean">
+        <li><strong>无线电波</strong>（最慢）：广播、电视、手机信号。波长大，能绕过楼房、穿透墙壁，所以传得远。</li>
+        <li><strong>微波</strong>：WiFi、雷达、卫星通信，还有微波炉——它的频率正好能让水分子共振，所以能"只加热含水的食物"。</li>
+        <li><strong>红外线</strong>：一切有温度的物体都在发出红外线。遥控器和热成像仪用的就是它。</li>
+        <li><strong>可见光</strong>：波谱中间极窄的一条缝，红橙黄绿蓝靛紫。你眼睛能看见的全部世界，只是这一小条。</li>
+        <li><strong>紫外线</strong>：能量开始足以撬动分子，会晒伤皮肤、诱发皮肤癌。</li>
+        <li><strong>X 射线</strong>：能穿过皮肉、被骨头挡住，所以用来拍片；但也能破坏活细胞。</li>
+        <li><strong>伽马射线</strong>（最快）：核反应发出的高能射线，能直接打断 DNA。</li>
+      </ul>
+
+      <p>关键的分界线，是"能量够不够打断分子"。紫外线及以上，能在你身体里把化学键硬生生撬断，所以被称为<strong>电离辐射</strong>，需要防护；可见光及以下能量太弱，顶多让分子晃一晃（也就是加热），基本无害。这就是为什么晒太阳会晒伤（紫外线干的），而天天用手机却没事（无线电波太弱）。</p>
+
+      <h3>第五步：天线，是怎么把电变成波的</h3>
+
+      <p>回到第一步的结论：要让电磁波发出去，只需让电荷加速振荡。而实现这件事最简单的装置，就是一根<strong>天线</strong>——本质上是一段导线，让里面的电子以某个频率来回振荡，波就从天线口散播出去。</p>
+
+      <p>为什么天线经常做成某一特定长度的杆或环？因为这里用了一个叫<strong>共振</strong>的技巧。就像荡秋千：按对节奏轻轻一推，它会越荡越高；节奏不对，怎么推都没用。天线也是一样——当它的尺寸接近电磁波波长的一半时，电子在那根金属上正好"荡"得最顺，发射和接收的效率最高。所以结论很实在：<em>频率越低、波长越长，天线就得越长。</em></p>
+
+      <p>反过来，飞来的电磁波会推着天线里的电子抖动，产生微弱电流——这就是<strong>接收</strong>。同一根天线既能发也能收，发射和接收其实是同一件事的两个方向。手机信号时好时坏，很多时候不是"波没送到"，而是你的手机天线在那个握持姿势下"荡"得不够好。</p>
+
+      <h3>第六步：信息怎么"骑"上波</h3>
+
+      <p>一列纯粹的电磁波只是单调的嗡嗡声，什么信息也带不了。要把声音、画面、数据送出去，得先准备一列频率非常稳定的<strong>载波</strong>，再想办法把信息"骑"上去。这个动作叫<strong>调制</strong>。</p>
+
+      <p>最古老的两种办法：<strong>调幅（AM）</strong>是让载波的<em>振幅</em>随声音上下起伏；<strong>调频（FM）</strong>是让载波的<em>频率</em>随声音微微伸缩。到了数字时代更彻底——直接把 0 和 1 变成波的状态（振幅高低、频率变化、相位翻转），一秒钟变上亿次。下面让你亲眼看看，信息是怎么"骑"到载波上的。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 调制</span><span class="hint">切换 AM / FM 两种骑法</span></div>
+        <div class="lab-stage"><canvas id="modulationCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <button class="btn primary" id="modToggle">切换为调频 FM</button>
+        </div>
+        <div class="lab-readout">
+          <div class="stat g"><span class="k">当前方式</span><span class="v" id="modMode" style="font-size:18px">调幅 AM</span></div>
+          <div class="stat v"><span class="k">信息载体</span><span class="v" id="modCarrier" style="font-size:15px;color:var(--ink-2)">振幅起伏</span></div>
+        </div>
+        <div class="lab-cap">上面绿色是你要发送的信号，中间黑色是稳定的载波，下面就是"骑"好信息的电磁波。AM 让波的<em>高低</em>随声音变化；FM 让波的<em>疏密</em>随声音变化。你的收音机调台，本质上就是在选一段载波频率，再把信号从上面"解"下来。</div>
+      </div>
+
+      <h3>第七步：为什么不同的无线，用不同的频率</h3>
+
+      <p>选频率其实是在做一组权衡。频率低、波长长，波就"软"一些，能绕过障碍、穿透墙壁、传得远——代价是每秒能塞进去的信息量少。频率高、波长短，能带的信息多、速度快——但容易被墙挡住、传不远，还得靠更多基站接力。</p>
+
+      <ul class="clean">
+        <li><strong>广播电台</strong>用很低的频率：一个电台能覆盖一大片地区，反正也不在乎音质。</li>
+        <li><strong>4G / 5G</strong>用更高的频率来换速度。5G 有些频段特别高，所以基站必须做得又密又小，隔几百米就得有一个——这不是运营商想多花钱，是物理规律逼的。</li>
+        <li><strong>WiFi 的 5GHz 比 2.4GHz 快，但穿墙差。</strong>同一个房子，2.4GHz 能穿到卧室，5GHz 可能隔一堵墙就掉速。这就是频率权衡最日常的例子。</li>
+      </ul>
+
+      <p>最后收个尾。你手机里的"电"在铜线上跑，一出天线就变成"磁"飞向空中；飞到你耳机里的音乐、眼前屏幕上的画面，在到达你之前，全都曾是电、是磁、是波，在不同形态之间换过好几次衣服。整个无线世界没有那么神秘——它只是电的另一种活法。</p>
+    </section>
+    <!-- ============ CH6 ============ -->
+    <section class="chap" id="ch6" data-nav="电从哪来" data-num="06">
+      <div class="chap-head">
+        <div class="eyebrow">第六章 · 系统篇</div>
+        <h2>电从哪来，又怎么跑到你家</h2>
+        <p class="sub">这一章，我们把第三章那台"电动机"反过来用，看看整个国家是怎么给你供电的。</p>
+      </div>
+
+      <h3>发电机：一台反向的电动机</h3>
+
+      <p>还记得电动机吗——通电的线圈被磁场推着转。现在把它<strong>倒过来</strong>：不用电推它，而是反过来用外力去转它。线圈在磁场里转动时，磁场相对线圈就在不断变化，于是——按法拉第的规律——线圈里涌出了电流。同一台机器，供电进去它就转（电动机），用力去转它就发电（发电机）。</p>
+
+      <div class="key">
+        <b>发电机 ＝ 被外力转动的电动机。</b>区别只在于能量往哪个方向流：电动机是电→动，发电机是动→电。这一句话，就是全世界所有发电厂的核心。
+      </div>
+
+      <p>那么问题变成：拿什么去转动它？世界各地给的答案不一样，但道理都一样——找个东西推着涡轮转。</p>
+
+      <ul class="clean">
+        <li><strong>火电</strong>：烧煤或天然气，把水烧成高压蒸汽，蒸汽吹动涡轮。</li>
+        <li><strong>核电</strong>：和火电几乎一样，只是"烧"的是铀原子核，同样把水变成蒸汽。</li>
+        <li><strong>水电</strong>：让高处的水冲下来，直接砸在涡轮上。</li>
+        <li><strong>风电</strong>：让风去推叶片，本质上也是"流体推动涡轮"。</li>
+        <li><strong>光伏</strong>：唯一不需要转动的——阳光里的光子直接敲在半导体上，把电子顶出来形成电流，和 LED 是反着来的同一套物理。</li>
+      </ul>
+
+      <h3>为什么满世界都是"交流"</h3>
+
+      <p>这一章开头那个悬念，现在可以揭晓了。发电厂往往离你几百公里，电要沿着高压线长途跋涉。长途输电最大的敌人是<strong>导线发热</strong>——而发热功率正比于电流的平方。所以想让损耗小，就得让电流尽量小。但功率 P＝V×I 又要保持不变，电流小了，电压就得往极高里抬。</p>
+
+      <p>于是问题来了：怎么能既把电压升到几十万伏送出去，到家门口又降回安全的 220V？答案就是<strong>变压器</strong>——那个只在<em>交流</em>下才管用的装置。因为变压器靠的是"不断变化的磁场"来工作，而恒定不变的直流根本变不出这个"变化"。所以，电网选择了交流。不是因为它更好，而是因为只有这样，电压才能被轻松地升上去、降下来。</p>
+
+      <div class="lab">
+        <div class="lab-bar"><span class="dot"></span><span class="ttl">实验台 · 变压器</span><span class="hint">拖动滑块改变两组线圈的匝数比</span></div>
+        <div class="lab-stage"><canvas id="xfmrCanvas"></canvas></div>
+        <div class="lab-ctrl">
+          <div class="ctrl"><label>次级匝数</label><input type="range" id="turnsSlider" min="10" max="90" step="1" value="30"><span class="val" id="turnsVal">30%</span></div>
+        </div>
+        <div class="lab-readout">
+          <div class="stat v"><span class="k">输入电压</span><span class="v" id="xfIn">220<span class="u">V</span></span></div>
+          <div class="stat c"><span class="k">输出电压</span><span class="v" id="xfOut">—</span></div>
+          <div class="stat g"><span class="k">模式</span><span class="v" id="xfMode" style="font-size:17px">降压</span></div>
+        </div>
+        <div class="lab-cap">左边是初级线圈、右边是次级线圈，中间的铁芯把变化的磁场从一边导到另一边。匝数比决定电压比：<code>V₂ / V₁ = N₂ / N₁</code>。次级匝数多 → 升压；次级匝数少 → 降压。电能总量守恒，所以电压降下来，电流就升上去——这正是充电器、变电站里发生的事。</div>
+      </div>
+
+      <h3>从电厂到你家插座，一路是这样的</h3>
+
+      <p>发电厂发出约 2 万伏的电，立刻被<strong>升压变压器</strong>抬到几十万伏，塞进高压输电线翻山越岭；到了城市附近，用<strong>降压变压器</strong>一级级降下来，从几十万伏降到几万伏，再到小区的配电房降到 220V/380V；最后通过你家墙上那个插座，进入你所有电器。</p>
+
+      <p>你家插座上其实有三根线：一根<strong>火线</strong>（带着 220V 的电压不停摆动）、一根<strong>零线</strong>（大致等于地面，是电流回去的路）、一根<strong>地线</strong>（平时不导电，只在电器漏电时把危险的电流引向大地）。配电箱里的<strong>空开和漏电保护器</strong>则像守门员：一旦检测到电流异常或有人触电，在几毫秒内掐断电路。</p>
+
+      <h3>最后，一个能救命的常识</h3>
+
+      <p>触电真正伤害你的，从来不是电压本身，而是<strong>流经你身体的电流</strong>。电压只是那个"推力"，真正致命的是有多少电流穿过你的心脏。这就是为什么小鸟能安全地站在单根高压线上——它全身处于同一个电压，没有"落差"，电流就不会从它身上流过。也是为什么湿手更危险——水让皮肤电阻骤降，同样的电压下，电流会大上几十倍。</p>
+    </section>
+    <!-- ============ CH7 ============ -->
+    <section class="chap" id="ch7" data-nav="把它们串起来" data-num="07">
+      <div class="chap-head">
+        <div class="eyebrow">终章 · 一张图</div>
+        <h2>把整个世界串成一条线</h2>
+        <p class="sub">如果你只带走一样东西，带走这张图。</p>
+      </div>
+
+      <p>读到这里，你已经走完了从一颗电子到一座电网的全程。回头看，这一整本书其实只讲了很少的几件事——但它们像齿轮一样咬合，转出了你身边所有的电器。下面这张图，就是它们咬合的样子。</p>
+
+      <div class="mapwrap">
+        <svg viewBox="0 0 760 470" role="img" aria-label="电磁知识总揽图">
+          <defs>
+            <marker id="arw" markerWidth="9" markerHeight="9" refX="6.5" refY="3.2" orient="auto"><path d="M0 0 L7 3.2 L0 6.4 z" fill="#8A96B0"/></marker>
+          </defs>
+
+          <!-- N1 -->
+          <rect x="305" y="24" width="150" height="48" rx="12" fill="#FFF4E8" stroke="#C06E38" stroke-width="1.6"/>
+          <text x="380" y="53" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="16" fill="#A85B27">电荷</text>
+
+          <!-- arrow 1 -->
+          <path d="M380 72 L380 118" stroke="#8A96B0" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="392" y="100" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">需要路 + 推力</text>
+
+          <!-- N2 -->
+          <rect x="220" y="124" width="320" height="52" rx="12" fill="#EEF4FF" stroke="#1D6FE8" stroke-width="1.6"/>
+          <text x="380" y="156" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="16" fill="#1657B8">电压 · 电流 · 电阻</text>
+
+          <!-- arrow 2 -->
+          <path d="M380 176 L380 218" stroke="#8A96B0" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="392" y="202" font-family="IBM Plex Mono" font-size="10" fill="#8A96B0">电流生磁</text>
+
+          <!-- N3 -->
+          <rect x="270" y="222" width="220" height="58" rx="12" fill="#F3ECFF" stroke="#7C5CD6" stroke-width="1.6"/>
+          <text x="380" y="250" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="16" fill="#6743BE">电 ⇄ 磁</text>
+          <text x="380" y="269" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A7BC0">变化的磁场 ⇄ 运动的电荷</text>
+
+          <!-- arrows to branches -->
+          <path d="M330 280 L200 342" stroke="#8A96B0" stroke-width="1.5" marker-end="url(#arw)"/>
+          <path d="M380 280 L380 342" stroke="#8A96B0" stroke-width="1.5" marker-end="url(#arw)"/>
+          <path d="M430 280 L560 342" stroke="#8A96B0" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="228" y="316" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">磁场推导线</text>
+          <text x="394" y="316" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">电荷加速→辐射</text>
+          <text x="500" y="316" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">磁生电</text>
+
+          <!-- N4a -->
+          <rect x="42" y="346" width="196" height="56" rx="12" fill="#fff" stroke="#C06E38" stroke-width="1.5"/>
+          <text x="140" y="372" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="13.5" fill="#131E36">电器</text>
+          <text x="140" y="389" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">电动机 · 扬声器 · LED</text>
+
+          <!-- N4b -->
+          <rect x="282" y="346" width="196" height="56" rx="12" fill="#fff" stroke="#7C5CD6" stroke-width="1.5"/>
+          <text x="380" y="372" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="13.5" fill="#131E36">电磁波</text>
+          <text x="380" y="389" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">WiFi · 5G · 光</text>
+
+          <!-- N4c -->
+          <rect x="522" y="346" width="196" height="56" rx="12" fill="#fff" stroke="#12B886" stroke-width="1.5"/>
+          <text x="620" y="372" text-anchor="middle" font-family="Space Grotesk" font-weight="600" font-size="13.5" fill="#131E36">发电 · 电网</text>
+          <text x="620" y="389" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#8A96B0">发电机 · 变压器</text>
+
+          <!-- closing note -->
+          <text x="380" y="446" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#8A96B0">同一批规律，不同的排列组合</text>
+        </svg>
+      </div>
+
+      <p>看得出吗？三条分支——电器、无线、发电——它们分出去的那一刻，用的都是"电与磁"这同一组机关，只是方向不同、用途不同。电动机用电去换动，发电机用动去换电，天线用电去换波，喇叭用波去换声。你身边所有带电的东西，无非是在这张图上，把能量从一种形式倒腾成另一种形式。</p>
+
+      <div class="key">
+        <b>所以电没什么神秘的。</b>它只是一个搬运能量的中间人：从发电厂的一台旋转机器，经过变压器和铜线，到你手里的手机、头顶的灯、转动的风扇，再到飞向天空的无线电波。理解了那股"被推着流动的电荷"，你就理解了今天这个世界的一大半。
+      </div>
+
+      <p>如果这本书只留下一个可以随身带走的直觉，我希望是这个：<strong>凡是带电的东西，都在某个地方有一群电荷，被某个电压推着，沿着某条路流动，并在途中把能量换成光、热、动或波。</strong>找到那条路，找到那个推力，你就看懂了它。</p>
+
+      <div class="done">
+        <div class="big">读完了</div>
+        <p>你刚刚走过了从一颗电荷到一座电网的完整路径。下次当你不确定某个电器为什么不工作时，不妨回头用这张图想一想：是没电（没有推力）？是断路（没有路）？还是电阻太大（路太难走）？大多数故障，都能被这三句话定位。</p>
+        <p style="margin-top:20px"><a href="quiz.html" style="color:var(--copper);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--copper)">→ 去做 25 道自测题，检验一下</a></p>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+(function(){
+  "use strict";
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var DW = 900;
+  var animators = [];
+  var stages = {};
+
+  function stage(id, dh){
+    var cv = document.getElementById(id);
+    if(!cv) return null;
+    var st = {cv:cv, ctx:cv.getContext("2d"), host:cv.parentElement, H:dh};
+    st.fit = function(){
+      var w = st.host.clientWidth;
+      if(w <= 0) return;
+      var h = w * dh / DW;
+      cv.width = Math.round(w * DPR);
+      cv.height = Math.round(h * DPR);
+      cv.style.height = h + "px";
+      st.s = w / DW;
+      st.ctx.setTransform(DPR * st.s, 0, 0, DPR * st.s, 0, 0);
+      st.W = DW;
+    };
+    st.fit();
+    stages[id] = st;
+    return st;
+  }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function fx(n,d){ return n.toFixed(d===undefined?2:d); }
+  function rr(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  /* ================= 1. STATIC BALLOON ================= */
+  (function(){
+    var st = stage("staticCanvas", 360);
+    if(!st) return;
+    var charge = 0, rubbing = false, t = 0;
+    var bits = [];
+    for(var i=0;i<16;i++){
+      bits.push({x:280 + i*34 + (Math.random()*14-7), y:296 + Math.random()*8, a:(Math.random()-0.5)*1.4, i:i});
+    }
+    var BX = 470, BY = 150, RX = 86, RY = 104;
+
+    var rubBtn = document.getElementById("rubBtn");
+    var resetBtn = document.getElementById("resetStatic");
+    function start(e){ e.preventDefault(); rubbing = true; }
+    function stop(){ rubbing = false; }
+    if(rubBtn){
+      rubBtn.addEventListener("pointerdown", start);
+      window.addEventListener("pointerup", stop);
+      rubBtn.addEventListener("click", function(){ charge = clamp(charge+0.1,0,1); });
+    }
+    if(resetBtn) resetBtn.addEventListener("click", function(){ charge = 0; });
+
+    function draw(dt){
+      t += dt;
+      if(rubbing) charge = clamp(charge + dt*0.55, 0, 1);
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+
+      // table
+      ctx.fillStyle = "rgba(19,30,54,.05)";
+      ctx.fillRect(0,300,W,60);
+      ctx.strokeStyle = "rgba(19,30,54,.18)"; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(0,300); ctx.lineTo(W,300); ctx.stroke();
+
+      // sweater
+      ctx.fillStyle = "#E9EDF3"; rr(ctx,58,120,150,180,14); ctx.fill();
+      ctx.strokeStyle = "#B7C0D0"; ctx.lineWidth = 1.3; ctx.stroke();
+      ctx.strokeStyle = "rgba(19,30,54,.16)"; ctx.lineWidth = 2;
+      for(var y=138; y<292; y+=16){
+        ctx.beginPath();
+        for(var x=70; x<196; x+=12){ ctx.lineTo(x, y + ((x/12)%2 ? 4 : -4)); }
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#59678A"; ctx.font = "11px 'IBM Plex Mono'"; ctx.textAlign = "center";
+      ctx.fillText("毛衣", 133, 316);
+
+      // balloon
+      var jig = rubbing ? Math.sin(t*30)*1.6 : 0;
+      var cx = BX + jig, cy = BY + (rubbing ? Math.cos(t*26)*1.2 : 0);
+      var neg = charge;
+      ctx.save();
+      var g = ctx.createRadialGradient(cx-30, cy-40, 10, cx, cy, RY+10);
+      if(neg > 0.05){
+        g.addColorStop(0, "#FFE6D6"); g.addColorStop(1, "#E8B07C");
+      } else { g.addColorStop(0, "#FFFFFF"); g.addColorStop(1, "#D8DEE9"); }
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(cx, cy, RX, RY, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(19,30,54,.22)"; ctx.lineWidth = 1.2; ctx.stroke();
+      // knot
+      ctx.beginPath(); ctx.moveTo(cx, cy+RY-4); ctx.lineTo(cx, cy+RY+16);
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.restore();
+
+      // minus charges on balloon
+      var n = Math.round(charge * 20);
+      ctx.font = "bold 15px 'IBM Plex Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      for(var k=0;k<n;k++){
+        var ang = -Math.PI*0.92 + (k/(Math.max(n-1,1))) * Math.PI*0.84;
+        var px = cx + Math.cos(ang)*RX*0.72;
+        var py = cy + Math.sin(ang)*RY*0.72;
+        ctx.fillStyle = "rgba(29,111,232," + (0.5 + 0.5*charge) + ")";
+        ctx.fillText("−", px, py);
+      }
+      ctx.textBaseline = "alphabetic";
+
+      // electrons flying during rub
+      if(rubbing){
+        for(var e=0;e<5;e++){
+          var pr = ((t*2.2 + e*0.2) % 1);
+          var ex = 205 + (BX-205)*pr;
+          var ey = 200 + Math.sin(pr*Math.PI)*-70 + e*10 - 20;
+          ctx.beginPath(); ctx.arc(ex, ey, 3.4, 0, Math.PI*2);
+          ctx.fillStyle = "rgba(29,111,232," + (0.9-pr*0.7) + ")"; ctx.fill();
+        }
+      }
+
+      // paper bits attracted
+      for(var b=0;b<bits.length;b++){
+        var bit = bits[b];
+        var ang2 = Math.PI*0.55 + (b/(bits.length-1))*Math.PI*0.9;
+        var tx = cx + Math.cos(ang2)*RX*0.92;
+        var ty = cy + Math.sin(ang2)*RY*0.92;
+        var pull = clamp((charge-0.1)/0.6, 0, 1);
+        bit.x += (tx - bit.x) * pull * 0.06;
+        bit.y += (ty - bit.y) * pull * 0.06;
+        var bx2 = bit.x, by2 = bit.y + Math.sin(t*3 + b)*pull*2;
+        ctx.save();
+        ctx.translate(bx2, by2);
+        ctx.rotate(bit.a + pull*ang2*0.5);
+        ctx.fillStyle = "#F4E4C8"; ctx.strokeStyle = "#C9A96A"; ctx.lineWidth = 0.8;
+        ctx.fillRect(-6, -3.5, 12, 7); ctx.strokeRect(-6, -3.5, 12, 7);
+        ctx.restore();
+      }
+
+      // readouts
+      var cvv = document.getElementById("chargeVal");
+      if(cvv) cvv.textContent = (charge*100).toFixed(1);
+      var bs = document.getElementById("balloonState");
+      if(bs) bs.textContent = charge<0.05 ? "中性" : charge<0.35 ? "微带电" : charge<0.7 ? "明显带电" : "强烈带电";
+      var cs = document.getElementById("chargeSign");
+      if(cs) cs.innerHTML = "－" + Math.round(charge*20) + '<span class="u">e</span>';
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 2. CIRCUIT ================= */
+  (function(){
+    var st = stage("circuitCanvas", 360);
+    if(!st) return;
+    var voltS = document.getElementById("voltSlider"), resS = document.getElementById("resSlider");
+    if(!voltS) return;
+    var water = false, phase = 0, t = 0;
+    var pts = [[250,120],[690,120],[690,290],[250,290]];
+    var segs = [], total = 0;
+    for(var i=0;i<pts.length;i++){
+      var a = pts[i], b = pts[(i+1)%pts.length];
+      var len = Math.hypot(b[0]-a[0], b[1]-a[1]);
+      segs.push({a:a,b:b,len:len,start:total}); total += len;
+    }
+    function at(s){
+      s = ((s % total) + total) % total;
+      for(var j=0;j<segs.length;j++){
+        var sg = segs[j];
+        if(s <= sg.start + sg.len){
+          var u = (s - sg.start)/sg.len;
+          return [sg.a[0]+(sg.b[0]-sg.a[0])*u, sg.a[1]+(sg.b[1]-sg.a[1])*u];
+        }
+      }
+      return [0,0];
+    }
+    var wt = document.getElementById("waterToggle");
+    if(wt) wt.addEventListener("click", function(){
+      water = !water;
+      wt.textContent = water ? "切回电路类比" : "切换水流类比";
+    });
+
+    function draw(dt){
+      t += dt;
+      var V = parseFloat(voltS.value), R = parseFloat(resS.value);
+      var I = V / R, P = V * I;
+      var spd = clamp(I, 0, 12) * 46;
+      phase += spd * dt;
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+
+      // labels readouts
+      var q = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+      q("voltVal", fx(V,1)+" V"); q("resVal", fx(R,1)+" Ω");
+      q("roVolt", fx(V,1)); q("roAmp", fx(I,2)); q("roPow", fx(P,1));
+      var e2 = document.getElementById("roVolt"); if(e2) e2.innerHTML = fx(V,1)+'<span class="u">V</span>';
+      e2 = document.getElementById("roAmp"); if(e2) e2.innerHTML = fx(I,2)+'<span class="u">A</span>';
+      e2 = document.getElementById("roPow"); if(e2) e2.innerHTML = fx(P,1)+'<span class="u">W</span>';
+      var bri = clamp(P/(P+8), 0, 1);
+      var bt = bri<0.03?"熄灭":bri<0.18?"微弱":bri<0.4?"较暗":bri<0.65?"正常":bri<0.88?"很亮":"爆亮";
+      e2 = document.getElementById("roBri"); if(e2) e2.textContent = bt;
+
+      // wires
+      ctx.lineCap = "round";
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = water ? "#CFE0F7" : "rgba(192,110,56,.30)";
+      ctx.beginPath(); ctx.moveTo(250,120); ctx.lineTo(690,120); ctx.lineTo(690,290); ctx.lineTo(250,290); ctx.closePath(); ctx.stroke();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = water ? "#7FB0E8" : "#C06E38";
+      ctx.stroke();
+
+      // dots
+      var gap = 46;
+      var count = Math.floor(total/gap);
+      for(var k=0;k<count;k++){
+        var s = (phase + k*gap) % total;
+        var p = at(s);
+        ctx.beginPath(); ctx.arc(p[0], p[1], 4.2, 0, Math.PI*2);
+        ctx.fillStyle = water ? "#3E8BE8" : "#E07A3C";
+        ctx.fill();
+        if(!water){ ctx.beginPath(); ctx.arc(p[0],p[1],4.2,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,.35)"; ctx.fill(); }
+      }
+
+      // battery (left wire center 250,205)
+      ctx.strokeStyle = "#131E36"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(233,196); ctx.lineTo(267,196); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(241,216); ctx.lineTo(259,216); ctx.stroke();
+      ctx.fillStyle = "#131E36"; ctx.font = "bold 13px 'IBM Plex Mono'"; ctx.textAlign="center";
+      ctx.fillText("+", 250, 188);
+      ctx.font = "10px 'IBM Plex Mono'"; ctx.fillStyle = "#59678A";
+      ctx.fillText(water ? "水压泵" : "电源", 250, 240);
+
+      // resistor (bottom center 470,290)
+      ctx.fillStyle = "#fff"; rr(ctx, 435, 277, 70, 26, 6); ctx.fill();
+      ctx.strokeStyle = "#7C5CD6"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#7C5CD6"; ctx.font = "10px 'IBM Plex Mono'";
+      ctx.fillText(water ? "阀门" : "电阻 R", 470, 322);
+
+      // bulb (top center 470,120)
+      var glowR = 26 + bri*46;
+      if(bri > 0.02){
+        var gg = ctx.createRadialGradient(470,120,4,470,120,glowR+40);
+        gg.addColorStop(0, "rgba(255,214,120," + (0.75*bri) + ")");
+        gg.addColorStop(0.4, "rgba(255,196,80," + (0.35*bri) + ")");
+        gg.addColorStop(1, "rgba(255,196,80,0)");
+        ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(470,120,glowR+40,0,Math.PI*2); ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(470,120,20,0,Math.PI*2);
+      ctx.fillStyle = "rgba(255,225,150," + (0.15 + 0.85*bri) + ")"; ctx.fill();
+      ctx.strokeStyle = bri>0.15 ? "#E8A62E" : "#B7C0D0"; ctx.lineWidth = 2.4; ctx.stroke();
+      // filament
+      ctx.beginPath(); ctx.moveTo(462,128); ctx.lineTo(466,114); ctx.lineTo(470,124); ctx.lineTo(474,114); ctx.lineTo(478,128);
+      ctx.strokeStyle = bri>0.15 ? "#FFB020" : "#B7C0D0"; ctx.lineWidth = 1.6; ctx.stroke();
+
+      // annotations
+      ctx.textAlign = "left"; ctx.font = "11px 'IBM Plex Mono'";
+      ctx.fillStyle = "#1D6FE8"; ctx.fillText((water?"水压 ":"电压 ")+fx(V,1)+" V", 700, 116);
+      ctx.fillStyle = "#7C5CD6"; ctx.fillText((water?"阻力 ":"电阻 ")+fx(R,1)+" Ω", 700, 296);
+      ctx.fillStyle = "#C06E38"; ctx.fillText((water?"流量 ":"电流 ")+fx(I,2)+" A", 300, 106);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 3. ELECTROMAGNET ================= */
+  (function(){
+    var st = stage("emCanvas", 360);
+    if(!st) return;
+    var sld = document.getElementById("emSlider");
+    if(!sld) return;
+    var dir = 1, t = 0;
+    var flip = document.getElementById("emFlip");
+    if(flip) flip.addEventListener("click", function(){ dir *= -1; });
+    var NX0 = 250, NX1 = 650, NY = 178;
+
+    function draw(dt){
+      t += dt;
+      var cur = parseFloat(sld.value)/100;
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+
+      var q=function(id,v){var e=document.getElementById(id); if(e) e.textContent=v;};
+      q("emVal", Math.round(cur*100)+"%");
+      var lvl = cur<0.08?"无":cur<0.35?"弱":cur<0.65?"中等":cur<0.9?"强":"极强";
+      var le=document.getElementById("emField"); if(le) le.innerHTML = cur<0.02?"零":lvl+(cur>0.9?'<span class="u">级</span>':'');
+      var clips = Math.round(cur*12);
+
+      // field lines
+      if(cur > 0.02){
+        for(var f=1; f<=5; f++){
+          ctx.beginPath();
+          ctx.ellipse(450, NY, 150 + f*42, 44 + f*30, 0, 0, Math.PI*2);
+          ctx.strokeStyle = "rgba(124,92,214," + (0.06 + cur*0.30*(1 - f*0.13)) + ")";
+          ctx.lineWidth = 1.6;
+          ctx.stroke();
+        }
+        // arrows on field, direction depends on polarity
+        var fidx = dir>0 ? 1 : 0;
+        ctx.fillStyle = "rgba(124,92,214,.5)";
+        ctx.font = "12px 'IBM Plex Mono'"; ctx.textAlign="center";
+        ctx.fillText(dir>0 ? "→" : "←", 450+ -0, 178 - 100);
+      }
+
+      // nail
+      var g = ctx.createLinearGradient(0, NY-16, 0, NY+16);
+      g.addColorStop(0,"#C9CED6"); g.addColorStop(0.5,"#9AA3B2"); g.addColorStop(1,"#767F8F");
+      ctx.fillStyle = g; rr(ctx, NX0, NY-16, NX1-NX0, 32, 16); ctx.fill();
+      ctx.strokeStyle = "#5A6273"; ctx.lineWidth = 1.2; ctx.stroke();
+
+      // coil loops
+      var loops = 9;
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 3; ctx.lineCap="round";
+      for(var L=0; L<loops; L++){
+        var x = 320 + L * ((600-320)/(loops-1));
+        ctx.beginPath();
+        ctx.ellipse(x, NY, 9, 30, 0, -Math.PI*0.62, Math.PI*0.62);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(x, NY, 9, 30, 0, Math.PI*0.38, Math.PI*1.62);
+        ctx.stroke();
+      }
+      // current direction arrows on coil
+      if(cur>0.03){
+        ctx.fillStyle = ctx.strokeStyle = "rgba(29,111,232,"+(0.4+cur*0.6)+")";
+        ctx.font = "11px 'IBM Plex Mono'"; ctx.textAlign="center";
+        for(var L2=0; L2<loops-1; L2+=2){
+          var x2 = 320 + L2*((600-320)/(loops-1));
+          ctx.fillText(dir>0 ? "↓":"↑", x2+22, NY-34);
+        }
+      }
+
+      // poles
+      var pL = dir>0 ? "N":"S", pR = dir>0 ? "S":"N";
+      var eL=document.getElementById("emPoleL"); if(eL) eL.textContent=pL;
+      var eR=document.getElementById("emPoleR"); if(eR) eR.textContent=pR;
+      ctx.font = "bold 18px 'Space Grotesk'"; ctx.textAlign="center";
+      ctx.fillStyle = "#7C5CD6";
+      ctx.fillText(pL, NX0-16, NY+7);
+      ctx.fillText(pR, NX1+16, NY+7);
+
+      // paper clips at poles
+      var leftC = Math.ceil(clips/2), rightC = clips - leftC;
+      function clip(x,y,flipSide){
+        ctx.save(); ctx.translate(x,y);
+        ctx.strokeStyle = "#8A96B0"; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0,0); ctx.lineTo(0,-16);
+        ctx.arc(-4,-16,4,0,Math.PI,true);
+        ctx.lineTo(-8, -4);
+        ctx.stroke();
+        ctx.restore();
+      }
+      for(var c1=0;c1<leftC;c1++){ clip(NX0-6 - (c1%3)*9, NY+22 + c1*17, true); }
+      for(var c2=0;c2<rightC;c2++){ clip(NX1+6 + (c2%3)*9, NY+22 + c2*17, false); }
+      var ec=document.getElementById("emClips"); if(ec) ec.innerHTML = clips+'<span class="u">枚</span>';
+
+      // caption
+      ctx.fillStyle = "#8A96B0"; ctx.font = "10px 'IBM Plex Mono'"; ctx.textAlign="center";
+      ctx.fillText("线圈通电流 → 铁芯被磁化 → 两端出现磁极", 450, 342);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 4. MOTOR ================= */
+  (function(){
+    var st = stage("motorCanvas", 360);
+    if(!st) return;
+    var sld = document.getElementById("motorSpeed");
+    if(!sld) return;
+    var ang = 0, paused = false;
+    var pb = document.getElementById("motorPause");
+    if(pb) pb.addEventListener("click", function(){ paused=!paused; pb.textContent = paused?"继续":"暂停"; });
+
+    function draw(dt){
+      var cur = parseFloat(sld.value)/100;
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+      if(!paused) ang += dt * cur * 2.4;
+      var rr2 = document.getElementById("motorVal"); if(rr2) rr2.textContent = Math.round(cur*100)+"%";
+      var rpm = Math.round(cur*3000);
+      var er = document.getElementById("motorRpm"); if(er) er.textContent = rpm + " rpm";
+
+      var cx = 450, cy = 180, R = 108;
+      // field
+      ctx.strokeStyle = "rgba(124,92,214,.22)"; ctx.lineWidth = 1.4;
+      for(var fy=120; fy<=245; fy+=32){
+        ctx.beginPath(); ctx.moveTo(168, fy); ctx.lineTo(732, fy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(724, fy-5); ctx.lineTo(734, fy); ctx.lineTo(724, fy+5); ctx.stroke();
+      }
+      // magnets
+      ctx.fillStyle = "#EDE7FB"; rr(ctx, 66, 118, 92, 128, 10); ctx.fill();
+      ctx.strokeStyle = "#7C5CD6"; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.fillStyle = "#EDE7FB"; rr(ctx, 742, 118, 92, 128, 10); ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#6743BE"; ctx.font = "bold 22px 'Space Grotesk'"; ctx.textAlign="center";
+      ctx.fillText("N", 112, 190); ctx.fillText("S", 788, 190);
+      ctx.font = "10px 'IBM Plex Mono'"; ctx.fillStyle="#8A7BC0";
+      ctx.fillText("磁场", 112, 262); ctx.fillText("磁场", 788, 262);
+
+      // coil cage
+      var dx = R * Math.cos(ang);
+      var dx2 = R * Math.cos(ang); // two sides
+      var xs = [cx - dx2, cx + dx2];
+      var topY = 92, botY = 268;
+      // connecting arcs (top/bottom) suggest depth
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 4; ctx.lineCap="round";
+      ctx.beginPath(); ctx.ellipse(cx, topY, Math.abs(dx2)+0.1, 16, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx, botY, Math.abs(dx2)+0.1, 16, 0, 0, Math.PI*2); ctx.stroke();
+      // the two conductors
+      ctx.strokeStyle = "#1D6FE8"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(xs[0], topY); ctx.lineTo(xs[0], botY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xs[1], topY); ctx.lineTo(xs[1], botY); ctx.stroke();
+
+      // current arrows: flip each half turn (commutator)
+      var sgn = Math.cos(ang) >= 0 ? 1 : -1;
+      ctx.fillStyle = "#1D6FE8"; ctx.font = "13px 'IBM Plex Mono'"; ctx.textAlign="center";
+      var arr = sgn > 0 ? "▲" : "▼";
+      ctx.fillText(arr, xs[0]-14, (topY+botY)/2);
+      ctx.fillText(sgn > 0 ? "▼":"▲", xs[1]+14, (topY+botY)/2);
+
+      // axis + commutator
+      ctx.strokeStyle = "#8A96B0"; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(cx, 78); ctx.lineTo(cx, 300); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, 300, 15, 0, Math.PI*2);
+      ctx.fillStyle="#fff"; ctx.fill(); ctx.strokeStyle="#8A96B0"; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, 285); ctx.lineTo(cx, 315); ctx.stroke();
+      ctx.fillStyle = "#8A96B0"; ctx.font="10px 'IBM Plex Mono'";
+      ctx.fillText("换向器", cx, 336);
+      // torque
+      ctx.strokeStyle = "#12B886"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, R+42, -0.9, 0.9); ctx.stroke();
+      ctx.fillStyle = "#0B8F6B"; ctx.font = "11px 'IBM Plex Mono'";
+      ctx.fillText("被推着转", cx, cy - R - 46);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 5. EM WAVE ================= */
+  (function(){
+    var st = stage("waveCanvas", 360);
+    if(!st) return;
+    var sld = document.getElementById("waveSlider");
+    if(!sld) return;
+    var phase = 0;
+    function bandOf(f){
+      if(f<3e9) return ["无线电波","#7C5CD6"];
+      if(f<3e11) return ["微波","#1D6FE8"];
+      if(f<4.3e14) return ["红外线","#E0632E"];
+      if(f<7.5e14) return ["可见光","#12B886"];
+      if(f<3e16) return ["紫外线","#8B5CF6"];
+      if(f<3e19) return ["X 射线","#0EA5A0"];
+      return ["伽马射线","#E84C7A"];
+    }
+    function fmtL(l){
+      if(l>=1) return fx(l, l<10?2:0)+" m";
+      if(l>=1e-3) return fx(l*1e3,1)+" mm";
+      if(l>=1e-6) return fx(l*1e6,1)+" μm";
+      if(l>=1e-9) return fx(l*1e9,0)+" nm";
+      return fx(l*1e12,1)+" pm";
+    }
+    function draw(dt){
+      var v = parseFloat(sld.value);
+      var exp = 6 + v/100*14;
+      var f = Math.pow(10, exp);
+      var lam = 2.998e8 / f;
+      var band = bandOf(f);
+      phase += dt * (2 + (exp-6)/14*24) * 0.9;
+
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+      var ev = document.getElementById("waveVal"); if(ev) ev.textContent = (f>=1e12 ? (f/1e12).toFixed(1)+" THz" : (f/1e9).toFixed(1)+" GHz");
+      var eb = document.getElementById("waveBand"); if(eb){ eb.textContent = band[0]; eb.style.color = band[1]; }
+      var el = document.getElementById("waveLambda"); if(el) el.textContent = fmtL(lam);
+
+      // spectrum strip
+      var sx0=60, sx1=840, sy=26, sh=13;
+      var grad = ctx.createLinearGradient(sx0,0,sx1,0);
+      grad.addColorStop(0.00,"#7C5CD6"); grad.addColorStop(0.30,"#1D6FE8");
+      grad.addColorStop(0.55,"#E0632E"); grad.addColorStop(0.617,"#E23B3B");
+      grad.addColorStop(0.63,"#E2A33B"); grad.addColorStop(0.645,"#3FBF5A");
+      grad.addColorStop(0.66,"#2E7DE0"); grad.addColorStop(0.70,"#8B5CF6");
+      grad.addColorStop(0.85,"#0EA5A0"); grad.addColorStop(1,"#E84C7A");
+      ctx.fillStyle = grad; rr(ctx, sx0, sy, sx1-sx0, sh, 6); ctx.fill();
+      // marker
+      var mx = sx0 + v/100*(sx1-sx0);
+      ctx.fillStyle = band[1];
+      ctx.beginPath(); ctx.moveTo(mx, sy+sh+3); ctx.lineTo(mx+7, sy+sh+13); ctx.lineTo(mx-7, sy+sh+13); ctx.closePath(); ctx.fill();
+
+      var axisY = 190, x0 = 90, x1 = 840, L = x1 - x0;
+      var cycles = 2 + (exp-6)/14*24;
+      var A = 78, B = 56;
+      // axis
+      ctx.strokeStyle = "rgba(19,30,54,.25)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0, axisY); ctx.lineTo(x1, axisY); ctx.stroke();
+
+      // B field (violet), drawn on a diagonal plane
+      ctx.beginPath();
+      for(var x=x0; x<=x1; x+=3){
+        var p = (x-x0)/L*cycles*Math.PI*2 - phase;
+        var y = axisY + Math.sin(p)*B*0.5;
+        var xo = Math.sin(p)*B*0.42;
+        if(x===x0) ctx.moveTo(x+xo, y); else ctx.lineTo(x+xo, y);
+      }
+      ctx.strokeStyle = "rgba(124,92,214,.75)"; ctx.lineWidth = 2; ctx.stroke();
+
+      // E field (blue), vertical
+      ctx.beginPath();
+      for(var x2=x0; x2<=x1; x2+=3){
+        var p2 = (x2-x0)/L*cycles*Math.PI*2 - phase;
+        var y2 = axisY - Math.sin(p2)*A;
+        if(x2===x0) ctx.moveTo(x2, y2); else ctx.lineTo(x2, y2);
+      }
+      ctx.strokeStyle = "#1D6FE8"; ctx.lineWidth = 2.4; ctx.stroke();
+
+      // arrow at front
+      ctx.fillStyle = "#1D6FE8"; ctx.font="11px 'IBM Plex Mono'"; ctx.textAlign="left";
+      ctx.fillText("电场 E", x0+6, axisY - A - 14);
+      ctx.fillStyle = "#7C5CD6";
+      ctx.fillText("磁场 B", x0+6, axisY + A*0.5 + 34);
+      ctx.fillStyle = "#8A96B0";
+      ctx.fillText("传播方向 →", x1-110, axisY-6);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 6. TRANSFORMER ================= */
+  (function(){
+    var st = stage("xfmrCanvas", 360);
+    if(!st) return;
+    var sld = document.getElementById("turnsSlider");
+    if(!sld) return;
+    var ph = 0;
+    function draw(dt){
+      ph += dt * 1.6;
+      var v = parseFloat(sld.value);
+      var Ns = Math.round(v*3);      // 30..270
+      var Np = 100;
+      var Vout = 220 * Ns / Np;
+      var ctx = st.ctx, W = DW, H = 360;
+      ctx.clearRect(0,0,W,H);
+
+      var tv = document.getElementById("turnsVal"); if(tv) tv.textContent = Ns + " 匝";
+      var io = document.getElementById("xfOut"); if(io) io.innerHTML = Math.round(Vout) + '<span class="u">V</span>';
+      var md = document.getElementById("xfMode"); if(md) md.textContent = Ns>Np+3?"升压":(Ns<Np-3?"降压":"1:1");
+
+      // core frame
+      var cx0=372, cx1=528, cy0=64, cy1=300, t=20;
+      ctx.fillStyle = "#DDE2EA"; ctx.strokeStyle = "#8A96B0"; ctx.lineWidth = 1.3;
+      rr(ctx, cx0, cy0, cx1-cx0, t, 3); ctx.fill(); ctx.stroke();
+      rr(ctx, cx0, cy1-t, cx1-cx0, t, 3); ctx.fill(); ctx.stroke();
+      rr(ctx, cx0, cy0, t, cy1-cy0, 3); ctx.fill(); ctx.stroke();
+      rr(ctx, cx1-t, cy0, t, cy1-cy0, 3); ctx.fill(); ctx.stroke();
+
+      // flux animation around core
+      ctx.strokeStyle = "rgba(192,110,56,.5)"; ctx.lineWidth = 2;
+      var segP = [[cx0+t/2,cy0+t/2],[cx1-t/2,cy0+t/2],[cx1-t/2,cy1-t/2],[cx0+t/2,cy1-t/2]];
+      for(var d=0; d<10; d++){
+        var u = ((ph*0.4 + d/10) % 1);
+        var seg = Math.floor(u*4), f2 = u*4 - seg;
+        var a = segP[seg], b = segP[(seg+1)%4];
+        var px = a[0]+(b[0]-a[0])*f2, py = a[1]+(b[1]-a[1])*f2;
+        ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI*2); ctx.fillStyle="#C06E38"; ctx.fill();
+      }
+
+      // primary coil (left leg, outside)
+      var nP = 8;
+      ctx.strokeStyle = "#1D6FE8"; ctx.lineWidth = 3.2; ctx.lineCap="round";
+      for(var i=0;i<nP;i++){
+        var y = 96 + i*((256-96)/(nP-1));
+        ctx.beginPath(); ctx.ellipse(cx0, y, 20, 7, 0, Math.PI*0.5, Math.PI*1.5); ctx.stroke();
+      }
+      // secondary coil (right leg)
+      var nS = clamp(Math.round(Ns/20), 2, 14);
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 3.2;
+      var y0=96, y1=256;
+      for(var j=0;j<nS;j++){
+        var yy = y0 + j*((y1-y0)/(nS-1));
+        ctx.beginPath(); ctx.ellipse(cx1, yy, 20, 7, 0, -Math.PI*0.5, Math.PI*0.5); ctx.stroke();
+      }
+
+      // leads
+      ctx.strokeStyle = "#131E36"; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(cx0-20, 176); ctx.lineTo(150, 176); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx1+20, 176); ctx.lineTo(750, 176); ctx.stroke();
+      // source / load
+      ctx.fillStyle = "#EEF4FF"; rr(ctx, 60, 148, 92, 56, 8); ctx.fill();
+      ctx.strokeStyle="#1D6FE8"; ctx.lineWidth=1.4; ctx.stroke();
+      ctx.fillStyle="#1657B8"; ctx.font="12px 'IBM Plex Mono'"; ctx.textAlign="center";
+      ctx.fillText("220 V AC", 106, 181);
+      ctx.fillStyle = "#FFF4E8"; rr(ctx, 750, 148, 92, 56, 8); ctx.fill();
+      ctx.strokeStyle="#C06E38"; ctx.stroke();
+      ctx.fillStyle="#A85B27"; ctx.fillText(Math.round(Vout)+" V", 796, 181);
+
+      // labels
+      ctx.fillStyle = "#1657B8"; ctx.font="11px 'IBM Plex Mono'";
+      ctx.fillText("初级 N₁ = 100 匝", 240, 320);
+      ctx.fillStyle = "#A85B27";
+      ctx.fillText("次级 N₂ = " + Ns + " 匝", 620, 320);
+      ctx.fillStyle = "#8A96B0"; ctx.font="10px 'IBM Plex Mono'";
+      ctx.fillText("铁芯传导变化的磁场", 450, 44);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 7. FIELD AROUND A WIRE (CH3) ================= */
+  (function(){
+    var st = stage("chWireCanvas", 340);
+    if(!st) return;
+    var out = true;                 // true = current out of page
+    var cx = 450, cy = 168;
+    var compass = {x:0, y:0};
+    var ang0 = -0.9, r0 = 150;
+    compass.x = cx + Math.cos(ang0)*r0;
+    compass.y = cy + Math.sin(ang0)*r0;
+    var dragging = false;
+
+    function toDesign(e){
+      var r = st.cv.getBoundingClientRect();
+      return [(e.clientX - r.left)/r.width*900, (e.clientY - r.top)/r.height*340];
+    }
+    st.cv.style.touchAction = "none";
+    st.cv.style.cursor = "grab";
+    st.cv.addEventListener("pointerdown", function(e){
+      dragging = true; st.cv.style.cursor = "grabbing";
+      try{ st.cv.setPointerCapture(e.pointerId); }catch(err){}
+      var p = toDesign(e); compass.x = p[0]; compass.y = p[1];
+    });
+    st.cv.addEventListener("pointermove", function(e){
+      if(!dragging) return;
+      var p = toDesign(e); compass.x = p[0]; compass.y = p[1];
+    });
+    window.addEventListener("pointerup", function(){ dragging = false; st.cv.style.cursor = "grab"; });
+    var btn = document.getElementById("wireFlip");
+    if(btn) btn.addEventListener("click", function(){ out = !out; });
+
+    var NAMES = ["东","东北","北","西北","西","西南","南","东南"];
+
+    function draw(){
+      var ctx = st.ctx;
+      ctx.clearRect(0,0,900,340);
+
+      // clamp compass into an annulus
+      var dx = compass.x - cx, dy = compass.y - cy;
+      var d = Math.hypot(dx, dy) || 1;
+      var ca = Math.atan2(dy, dx);
+      var rad = clamp(d, 66, 218);
+      compass.x = cx + Math.cos(ca)*rad;
+      compass.y = cy + Math.sin(ca)*rad;
+
+      // field circles
+      var rs = [62, 110, 158, 206];
+      for(var i=0;i<rs.length;i++){
+        ctx.beginPath(); ctx.arc(cx, cy, rs[i], 0, Math.PI*2);
+        ctx.strokeStyle = "rgba(124,92,214," + (0.55 - i*0.11) + ")";
+        ctx.lineWidth = 1.8; ctx.stroke();
+        for(var a=0;a<4;a++){
+          var th = (Math.PI/2)*a + 0.6;
+          var ax = cx + Math.cos(th)*rs[i], ay = cy + Math.sin(th)*rs[i];
+          var tx, ty;
+          if(out){ tx = Math.sin(th); ty = -Math.cos(th); }
+          else   { tx = -Math.sin(th); ty = Math.cos(th); }
+          var tt = Math.atan2(ty, tx);
+          ctx.save(); ctx.translate(ax, ay); ctx.rotate(tt);
+          ctx.beginPath(); ctx.moveTo(-5,-4.5); ctx.lineTo(6,0); ctx.lineTo(-5,4.5); ctx.closePath();
+          ctx.fillStyle = "rgba(124,92,214," + (0.5 - i*0.1) + ")"; ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // wire cross-section at center
+      ctx.beginPath(); ctx.arc(cx, cy, 17, 0, Math.PI*2);
+      ctx.fillStyle = "#C06E38"; ctx.fill();
+      ctx.strokeStyle = "#8A4C22"; ctx.lineWidth = 1.4; ctx.stroke();
+      if(out){
+        ctx.beginPath(); ctx.arc(cx, cy, 4.5, 0, Math.PI*2); ctx.fillStyle = "#fff"; ctx.fill();
+      } else {
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(cx-7,cy-7); ctx.lineTo(cx+7,cy+7);
+        ctx.moveTo(cx+7,cy-7); ctx.lineTo(cx-7,cy+7); ctx.stroke();
+      }
+      ctx.fillStyle = "#59678A"; ctx.font = "11px 'IBM Plex Mono'"; ctx.textAlign = "center";
+      ctx.fillText(out ? "电流射出纸面" : "电流射入纸面", cx, cy + 42);
+
+      // compass
+      var px = compass.x, py = compass.y;
+      var tdx = px - cx, tdy = py - cy;
+      var ta = Math.atan2(tdy, tdx);
+      var ntx, nty;
+      if(out){ ntx = Math.sin(ta); nty = -Math.cos(ta); }
+      else   { ntx = -Math.sin(ta); nty = Math.cos(ta); }
+
+      ctx.beginPath(); ctx.arc(px, py, 27, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fill();
+      ctx.strokeStyle = "#131E36"; ctx.lineWidth = 1.6; ctx.stroke();
+      for(var t=0;t<12;t++){
+        var a2 = t/12*Math.PI*2;
+        ctx.beginPath();
+        ctx.moveTo(px+Math.cos(a2)*21, py+Math.sin(a2)*21);
+        ctx.lineTo(px+Math.cos(a2)*25, py+Math.sin(a2)*25);
+        ctx.strokeStyle = "rgba(19,30,54,.3)"; ctx.lineWidth = 1; ctx.stroke();
+      }
+      var na = Math.atan2(nty, ntx);
+      ctx.save(); ctx.translate(px, py); ctx.rotate(na);
+      ctx.beginPath(); ctx.moveTo(20,0); ctx.lineTo(-3,-6); ctx.lineTo(-3,6); ctx.closePath();
+      ctx.fillStyle = "#D64545"; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(3,-6); ctx.lineTo(3,6); ctx.closePath();
+      ctx.fillStyle = "#3B6FD4"; ctx.fill();
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fillStyle = "#131E36"; ctx.fill();
+
+      // readouts
+      var e1 = document.getElementById("wireDir");
+      if(e1) e1.textContent = out ? "射出纸面 ⊙" : "射入纸面 ⊗";
+      var e2 = document.getElementById("wireField");
+      if(e2) e2.textContent = out ? "逆时针" : "顺时针";
+      var e3 = document.getElementById("wireNeedle");
+      if(e3){
+        var bearing = Math.atan2(-nty, ntx);
+        var deg = (bearing*180/Math.PI + 360) % 360;
+        e3.textContent = NAMES[Math.round(deg/45) % 8];
+      }
+
+      ctx.fillStyle = "#8A96B0"; ctx.font = "10px 'IBM Plex Mono'"; ctx.textAlign = "center";
+      ctx.fillText("右手拇指指电流，四指绕的方向 = 磁场方向", 450, 322);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 8. INDUCTION (CH3) ================= */
+  (function(){
+    var st = stage("inductionCanvas", 340);
+    if(!st) return;
+    var mx = 250, prevMx = 250, disp = 0, dragging = false, flip = false;
+    var coilX = 610, y = 168;
+
+    function toDesign(e){
+      var r = st.cv.getBoundingClientRect();
+      return [(e.clientX - r.left)/r.width*900, (e.clientY - r.top)/r.height*340];
+    }
+    st.cv.style.touchAction = "none"; st.cv.style.cursor = "grab";
+    st.cv.addEventListener("pointerdown", function(e){
+      dragging = true; st.cv.style.cursor = "grabbing";
+      try{ st.cv.setPointerCapture(e.pointerId); }catch(err){}
+      var p = toDesign(e); mx = clamp(p[0], 130, 770); prevMx = mx;
+    });
+    st.cv.addEventListener("pointermove", function(e){
+      if(!dragging) return;
+      var p = toDesign(e); mx = clamp(p[0], 130, 770);
+    });
+    window.addEventListener("pointerup", function(){ dragging = false; st.cv.style.cursor = "grab"; });
+    var fb = document.getElementById("inductionFlip");
+    if(fb) fb.addEventListener("click", function(){ flip = !flip; });
+
+    function draw(dt){
+      var ctx = st.ctx;
+      ctx.clearRect(0,0,900,340);
+      var d = (dt > 0 ? dt : 0.016);
+      var v = (mx - prevMx)/d;
+      prevMx = mx;
+
+      // how close the magnet is to the coil matters, plus its speed
+      var near = clamp(1 - Math.abs((mx + 70) - coilX)/320, 0.15, 1);
+      var raw = clamp(v/1000, -1, 1) * near;
+      disp += (raw - disp) * 0.16;
+      var cur = disp * (flip ? -1 : 1);
+
+      // rail
+      ctx.strokeStyle = "rgba(19,30,54,.16)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(130, y); ctx.lineTo(820, y); ctx.stroke();
+
+      // leads to galvanometer
+      ctx.strokeStyle = "#B7C0D0"; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(coilX-58, y); ctx.lineTo(coilX-58, 292); ctx.lineTo(196, 292); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(coilX+58, y); ctx.lineTo(coilX+58, 314); ctx.lineTo(196, 314); ctx.stroke();
+
+      // coil (solenoid)
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 3.4; ctx.lineCap = "round";
+      var loops = 6;
+      for(var i=0;i<loops;i++){
+        var lx = (coilX-58) + i*(116/(loops-1));
+        ctx.beginPath(); ctx.ellipse(lx, y, 8, 32, 0, 0, Math.PI*2); ctx.stroke();
+      }
+      // current arrow above coil
+      var mag = Math.min(Math.abs(cur)*2.2, 1);
+      if(mag > 0.05){
+        ctx.save();
+        ctx.globalAlpha = mag;
+        ctx.fillStyle = "#1D6FE8";
+        ctx.beginPath();
+        if(cur > 0){ ctx.moveTo(coilX+34, 120); ctx.lineTo(coilX-34, 120); ctx.lineTo(coilX-34, 114); ctx.lineTo(coilX-46, 124); ctx.lineTo(coilX-34, 134); ctx.lineTo(coilX-34, 128); ctx.lineTo(coilX+34, 128); }
+        else       { ctx.moveTo(coilX-34, 120); ctx.lineTo(coilX+34, 120); ctx.lineTo(coilX+34, 114); ctx.lineTo(coilX+46, 124); ctx.lineTo(coilX+34, 134); ctx.lineTo(coilX+34, 128); ctx.lineTo(coilX-34, 128); }
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+
+      // magnet
+      var mw = 132, mh = 34;
+      var x0 = mx - mw/2, y0 = y - mh/2;
+      var leftIsN = !flip;
+      ctx.fillStyle = leftIsN ? "#7C5CD6" : "#1D6FE8";
+      rr(ctx, x0, y0, mw/2, mh, 5); ctx.fill();
+      ctx.fillStyle = leftIsN ? "#1D6FE8" : "#7C5CD6";
+      rr(ctx, x0+mw/2, y0, mw/2, mh, 5); ctx.fill();
+      ctx.strokeStyle = "#131E36"; ctx.lineWidth = 1.2; rr(ctx, x0, y0, mw, mh, 5); ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.font = "bold 15px 'Space Grotesk'"; ctx.textAlign = "center";
+      ctx.fillText(leftIsN ? "N" : "S", x0 + mw*0.25, y + 5);
+      ctx.fillText(leftIsN ? "S" : "N", x0 + mw*0.75, y + 5);
+      // a few field arcs off the right pole
+      ctx.strokeStyle = "rgba(124,92,214,.4)"; ctx.lineWidth = 1.4;
+      for(var f=1; f<=3; f++){
+        ctx.beginPath();
+        ctx.ellipse(x0+mw, y, 16+f*13, 20+f*17, 0, -Math.PI/2, Math.PI/2);
+        ctx.stroke();
+      }
+
+      // galvanometer
+      var gx = 130, gy = 303, gr = 34;
+      ctx.beginPath(); ctx.arc(gx, gy, gr, Math.PI, 0); ctx.closePath();
+      ctx.fillStyle = "#fff"; ctx.fill();
+      ctx.strokeStyle = "#131E36"; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.beginPath(); ctx.arc(gx, gy, gr-7, Math.PI, 0); ctx.strokeStyle = "rgba(19,30,54,.25)"; ctx.lineWidth = 1; ctx.stroke();
+      var na = -Math.PI/2 + clamp(cur*1.1, -1, 1) * 1.15;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + Math.cos(na)*(gr-8), gy + Math.sin(na)*(gr-8));
+      ctx.strokeStyle = "#D64545"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.stroke();
+      ctx.beginPath(); ctx.arc(gx, gy, 3.6, 0, Math.PI*2); ctx.fillStyle = "#131E36"; ctx.fill();
+      ctx.fillStyle = "#8A96B0"; ctx.font = "10px 'IBM Plex Mono'"; ctx.textAlign = "center";
+      ctx.fillText("-", gx-gr+6, gy-4); ctx.fillText("+", gx+gr-6, gy-4);
+      ctx.fillText("电流计", gx, gy+38);
+
+      // status
+      var val = document.getElementById("inductionVal");
+      var stt = document.getElementById("inductionState");
+      var moving = Math.abs(v) > 60;
+      if(moving){
+        if(val){ val.textContent = (cur>0 ? "→ 向左" : "← 向右"); val.style.color = "#C06E38"; }
+        if(stt) stt.textContent = "磁场在变化 → 有感生电流";
+      } else {
+        if(val){ val.textContent = "无"; val.style.color = "#8A96B0"; }
+        if(stt) stt.textContent = "磁铁静止 → 没有电流";
+      }
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= 9. MODULATION (CH5) ================= */
+  (function(){
+    var st = stage("modulationCanvas", 340);
+    if(!st) return;
+    var phase = 0, stime = 0, mode = "AM";
+    var btn = document.getElementById("modToggle");
+    if(btn) btn.addEventListener("click", function(){
+      mode = (mode === "AM") ? "FM" : "AM";
+      btn.textContent = (mode === "AM") ? "切换为调频 FM" : "切换为调幅 AM";
+      var m = document.getElementById("modMode"); if(m) m.textContent = (mode==="AM") ? "调幅 AM" : "调频 FM";
+      var c = document.getElementById("modCarrier"); if(c) c.textContent = (mode==="AM") ? "振幅起伏" : "频率疏密";
+    });
+    function sig(t){ return 0.62*Math.sin(t*2*Math.PI*0.55) + 0.28*Math.sin(t*2*Math.PI*1.07 + 1.2); }
+
+    function draw(dt){
+      var d = (dt > 0 ? dt : 0.016);
+      phase += d * 2*Math.PI*9;
+      stime += d;
+      var ctx = st.ctx;
+      ctx.clearRect(0,0,900,340);
+      var x0 = 96, x1 = 856;
+
+      function laneAxis(cy){
+        ctx.strokeStyle = "rgba(19,30,54,.14)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x0, cy); ctx.lineTo(x1, cy); ctx.stroke();
+      }
+
+      // lane 1 — signal
+      laneAxis(62);
+      ctx.beginPath();
+      for(var x=x0; x<=x1; x+=3){
+        var t = stime + (x-x0)/760*0.9;
+        var yy = 62 - sig(t)*30;
+        if(x===x0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+      }
+      ctx.strokeStyle = "#12B886"; ctx.lineWidth = 2.2; ctx.stroke();
+
+      // lane 2 — carrier
+      laneAxis(162);
+      ctx.beginPath();
+      for(var x2=x0; x2<=x1; x2+=3){
+        var yy2 = 162 - Math.sin(phase + (x2-x0)/760*Math.PI*2*6)*30;
+        if(x2===x0) ctx.moveTo(x2,yy2); else ctx.lineTo(x2,yy2);
+      }
+      ctx.strokeStyle = "#3A4A6B"; ctx.lineWidth = 1.8; ctx.stroke();
+
+      // lane 3 — modulated
+      laneAxis(272);
+      var A3 = 42;
+      if(mode === "AM"){
+        // dashed envelope
+        ctx.beginPath();
+        for(var xe=x0; xe<=x1; xe+=3){
+          var te = stime + (xe-x0)/760*0.9;
+          var env = 0.42 + 0.58*(sig(te)*0.5 + 0.5);
+          if(xe===x0) ctx.moveTo(xe, 272 - A3*env); else ctx.lineTo(xe, 272 - A3*env);
+        }
+        ctx.strokeStyle = "rgba(192,110,56,.35)"; ctx.lineWidth = 1.2; ctx.setLineDash([4,4]); ctx.stroke();
+        ctx.beginPath();
+        for(var xe2=x0; xe2<=x1; xe2+=3){
+          var te2 = stime + (xe2-x0)/760*0.9;
+          var env2 = 0.42 + 0.58*(sig(te2)*0.5 + 0.5);
+          if(xe2===x0) ctx.moveTo(xe2, 272 + A3*env2); else ctx.lineTo(xe2, 272 + A3*env2);
+        }
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+      ctx.beginPath();
+      for(var x3=x0; x3<=x1; x3+=2){
+        var t3 = stime + (x3-x0)/760*0.9;
+        var s = sig(t3);
+        var yy3;
+        if(mode === "AM"){ yy3 = 272 - Math.sin(phase + (x3-x0)/760*Math.PI*2*6)*(0.42 + 0.58*(s*0.5+0.5))*A3; }
+        else             { yy3 = 272 - Math.sin(phase + (x3-x0)/760*Math.PI*2*6 + 5*s)*A3; }
+        if(x3===x0) ctx.moveTo(x3,yy3); else ctx.lineTo(x3,yy3);
+      }
+      ctx.strokeStyle = "#C06E38"; ctx.lineWidth = 2.2; ctx.stroke();
+
+      // labels
+      ctx.textAlign = "left"; ctx.font = "11px 'IBM Plex Mono'";
+      ctx.fillStyle = "#0B8F6B"; ctx.fillText("信号（声音 / 数据）", x0, 40);
+      ctx.fillStyle = "#3A4A6B"; ctx.fillText("载波（稳定的高频电磁波）", x0, 142);
+      ctx.fillStyle = "#A85B27"; ctx.fillText(mode === "AM" ? "调幅 AM —— 振幅随信号起伏" : "调频 FM —— 疏密随信号伸缩", x0, 250);
+    }
+    animators.push(draw);
+  })();
+
+  /* ================= DEVICE TABS ================= */
+  (function(){
+    var tabs = document.querySelectorAll("#deviceTabs .chip");
+    if(!tabs.length) return;
+    tabs.forEach(function(chip){
+      chip.addEventListener("click", function(){
+        tabs.forEach(function(c){ c.classList.remove("active"); });
+        chip.classList.add("active");
+        document.querySelectorAll(".dev-panel").forEach(function(p){
+          p.classList.toggle("on", p.dataset.panel === chip.dataset.dev);
+        });
+      });
+    });
+  })();
+
+  /* ================= NAV ================= */
+  (function(){
+    var chaps = Array.prototype.slice.call(document.querySelectorAll(".chap"));
+    var navList = document.getElementById("navList");
+    var packet = document.getElementById("railPacket");
+    var progress = document.getElementById("railProgress");
+    var mobile = document.getElementById("mobileNav");
+    if(navList){
+      chaps.forEach(function(sec, i){
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = "#" + sec.id;
+        a.dataset.target = sec.id;
+        a.innerHTML = '<span class="node">'+(sec.dataset.num||"")+'</span><span class="lbl">'+(sec.dataset.nav||"")+'</span>';
+        li.appendChild(a); navList.appendChild(li);
+      });
+    }
+    if(mobile){
+      chaps.forEach(function(sec){
+        var o = document.createElement("option");
+        o.value = sec.id; o.textContent = (sec.dataset.num?sec.dataset.num+" · ":"") + (sec.dataset.nav||"");
+        mobile.appendChild(o);
+      });
+      mobile.addEventListener("change", function(){
+        var el = document.getElementById(mobile.value);
+        if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    }
+    var links = navList ? Array.prototype.slice.call(navList.querySelectorAll("a")) : [];
+    function update(){
+      var focusY = window.scrollY + window.innerHeight*0.34;
+      var active = -1;
+      chaps.forEach(function(sec, i){ if(sec.offsetTop <= focusY) active = i; });
+      links.forEach(function(a, i){
+        a.classList.toggle("active", i === active);
+        a.classList.toggle("done", active >= 0 && i < active);
+      });
+      if(packet && active >= 0 && links[active]){
+        var li = links[active].parentElement;      // offsetParent is .rail (position:relative)
+        var top = li.offsetTop + li.offsetHeight/2;
+        packet.style.top = (top - 5.5) + "px";
+        if(progress) progress.style.height = top + "px";
+      } else if(packet){
+        packet.style.top = "8px";
+        if(progress) progress.style.height = "8px";
+      }
+      if(mobile && active >= 0) mobile.value = chaps[active].id;
+    }
+    window.addEventListener("scroll", update, {passive:true});
+    window.addEventListener("resize", update);
+    update();
+  })();
+
+  /* ================= LOOP + RESIZE ================= */
+  function resizeAll(){
+    for(var k in stages){ if(stages.hasOwnProperty(k)) stages[k].fit(); }
+  }
+  window.addEventListener("resize", resizeAll);
+  window.addEventListener("load", resizeAll);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(resizeAll); }
+
+  var last = performance.now();
+  function loop(now){
+    var dt = Math.min((now - last)/1000, 0.05);
+    last = now;
+    for(var i=0;i<animators.length;i++){
+      try{ animators[i](dt); }catch(e){}
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电学自测 · 25 题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F2F4F7; --card:#FFFFFF; --ink:#131E36; --ink-2:#59678A; --ink-3:#8A96B0;
+  --copper:#C06E38; --copper-wash:rgba(192,110,56,.10);
+  --volt:#1D6FE8; --volt-wash:rgba(29,111,232,.10);
+  --flux:#7C5CD6; --flux-wash:rgba(124,92,214,.10);
+  --live:#12B886; --live-wash:rgba(18,184,134,.13);
+  --bad:#D64545; --bad-wash:rgba(214,69,69,.10);
+  --line:rgba(19,30,54,.13); --line-soft:rgba(19,30,54,.07);
+  --grid:rgba(19,30,54,.045);
+  --r:16px;
+  --shadow:0 1px 2px rgba(19,30,54,.05), 0 18px 40px -24px rgba(19,30,54,.35);
+  --f-disp:"Space Grotesk", system-ui, "PingFang SC", "Noto Sans SC", sans-serif;
+  --f-body:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--f-body); color:var(--ink); background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px, transparent 1px),linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:26px 26px; -webkit-font-smoothing:antialiased; line-height:1.8; min-height:100vh;
+}
+/* ---- top bar ---- */
+.bar{position:sticky;top:0;z-index:40;background:rgba(242,244,247,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft)}
+.barin{max-width:820px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-disp);font-weight:600;font-size:15px}
+.mark{width:28px;height:28px;border-radius:8px;background:var(--ink);display:grid;place-items:center;flex:0 0 auto}
+.mark svg{width:19px;height:19px}
+.meters{margin-left:auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.segs{display:flex;gap:3px}
+.segs i{width:11px;height:5px;border-radius:3px;background:var(--line);transition:.25s}
+.segs i.ok{background:var(--live)} .segs i.no{background:var(--bad)} .segs i.now{background:var(--copper)}
+.score{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.score b{color:var(--ink);font-size:15px}
+.back{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);padding:6px 11px;border-radius:8px;background:var(--card);transition:.15s}
+.back:hover{border-color:var(--copper);color:var(--copper)}
+/* ---- stage ---- */
+.wrap{max-width:820px;margin:0 auto;padding:34px 22px 120px}
+.qmeta{display:flex;align-items:center;gap:12px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;margin-bottom:16px}
+.chapTag{background:var(--flux-wash);color:#6743BE;padding:4px 11px;border-radius:100px;font-weight:500}
+.qidx{color:var(--ink-3)}
+h1.qtext{font-family:var(--f-disp);font-weight:600;font-size:clamp(21px,3.4vw,28px);line-height:1.42;letter-spacing:-.01em;margin-bottom:26px;max-width:34em}
+.opts{display:flex;flex-direction:column;gap:11px;max-width:44em}
+.opt{display:flex;align-items:flex-start;gap:14px;text-align:left;width:100%;font-family:inherit;font-size:16px;line-height:1.65;color:var(--ink);
+  background:var(--card);border:1.5px solid var(--line);border-radius:13px;padding:15px 17px;cursor:pointer;transition:.16s;box-shadow:0 1px 2px rgba(19,30,54,.04)}
+.opt:hover:not(.locked){border-color:var(--copper);transform:translateY(-1px);box-shadow:var(--shadow)}
+.opt .key{font-family:var(--f-mono);font-size:12px;font-weight:600;width:24px;height:24px;flex:0 0 auto;border-radius:7px;background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2);margin-top:1px}
+.opt.locked{cursor:default}
+.opt.correct{border-color:var(--live);background:var(--live-wash)}
+.opt.correct .key{background:var(--live);border-color:var(--live);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-wash)}
+.opt.wrong .key{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt.dim{opacity:.42}
+/* ---- explanation ---- */
+.explain{margin-top:20px;border-left:3px solid var(--live);background:linear-gradient(90deg,var(--live-wash),transparent 78%);
+  border-radius:0 12px 12px 0;padding:15px 20px;max-width:44em;display:none}
+.explain.on{display:block;animation:rise .3s ease}
+.explain.wrong{border-left-color:var(--bad);background:linear-gradient(90deg,var(--bad-wash),transparent 78%)}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.explain .verdict{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.05em;margin-bottom:5px;color:#0B8F6B}
+.explain.wrong .verdict{color:var(--bad)}
+.explain p{font-size:15.5px;color:#26334f;max-width:40em}
+.explain p b{color:var(--ink)}
+/* ---- actions ---- */
+.actions{margin-top:26px;display:flex;gap:12px;align-items:center}
+.btn{font-family:var(--f-mono);font-size:13px;letter-spacing:.03em;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 20px;border-radius:11px;cursor:pointer;transition:.15s;font-weight:500}
+.btn:hover{border-color:var(--copper);color:var(--copper);background:var(--copper-wash)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:var(--copper);border-color:var(--copper);color:#fff}
+.btn[hidden]{display:none}
+.hint{margin-top:16px;font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:.03em}
+/* ---- result ---- */
+.result{display:none}
+.result.on{display:block;animation:rise .4s ease}
+.ringwrap{display:flex;align-items:center;gap:30px;flex-wrap:wrap;margin:6px 0 30px}
+.ring{position:relative;width:150px;height:150px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;font-size:38px;letter-spacing:-.02em}
+.ring .num small{font-size:14px;color:var(--ink-3);font-weight:500}
+.verdictBig{font-family:var(--f-disp);font-weight:700;font-size:clamp(24px,4vw,32px);letter-spacing:-.015em;line-height:1.25}
+.verdictBig span{color:var(--copper)}
+.vsub{color:var(--ink-2);font-size:16px;margin-top:8px;max-width:30em}
+.review{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.rv{border:1px solid var(--line);border-radius:13px;background:var(--card);padding:15px 18px}
+.rv .rqq{font-weight:600;font-size:15.5px;margin-bottom:7px}
+.rv .rqq .n{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-right:8px}
+.rv .row{font-size:14.5px;line-height:1.7;color:#26334f}
+.rv .row .tag{font-family:var(--f-mono);font-size:11px;padding:2px 7px;border-radius:6px;margin-right:8px}
+.rv .row.you .tag{background:var(--bad-wash);color:var(--bad)}
+.rv .row.good .tag{background:var(--live-wash);color:#0B8F6B}
+.rv .why{margin-top:8px;font-size:14px;color:var(--ink-2);border-top:1px dashed var(--line);padding-top:8px}
+h2.rtitle{font-family:var(--f-disp);font-weight:600;font-size:19px;margin:34px 0 4px}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="barin">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 L20 8 L20 16 L12 21 L4 16 L4 8 Z" stroke="#E8B07C" stroke-width="1.5"/><circle cx="12" cy="12" r="2" fill="#E8B07C"/></svg></span>
+      电学自测
+    </div>
+    <div class="meters">
+      <div class="segs" id="segs"></div>
+      <div class="score">答对 <b id="scoreNum">0</b> / <span id="scoreTot">25</span></div>
+      <a class="back" href="index.html">← 回到教材</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="quiz">
+    <div class="qmeta"><span class="chapTag" id="qChap">第一章</span><span class="qidx" id="qIdx">第 1 题</span></div>
+    <h1 class="qtext" id="qText"></h1>
+    <div class="opts" id="opts"></div>
+    <div class="explain" id="explain"></div>
+    <div class="actions"><button class="btn primary" id="nextBtn" hidden>下一题 →</button></div>
+    <div class="hint">提示：可以用键盘 1 / 2 / 3 / 4 选择，回车进入下一题</div>
+  </section>
+
+  <section class="result" id="result">
+    <div class="ringwrap">
+      <div class="ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="64" fill="none" stroke="rgba(19,30,54,.10)" stroke-width="13"/>
+          <circle id="ringArc" cx="75" cy="75" r="64" fill="none" stroke="#C06E38" stroke-width="13" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"/>
+        </svg>
+        <div class="num"><span id="pct">0</span><small>%</small></div>
+      </div>
+      <div>
+        <div class="verdictBig" id="verdictBig">—</div>
+        <p class="vsub" id="vsub"></p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="againAll">重做全部</button>
+      <button class="btn" id="againWrong">只练错题</button>
+    </div>
+    <h2 class="rtitle" id="reviewTitle">错题回顾</h2>
+    <div class="review" id="review"></div>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var QUESTIONS = [
+    { c:"第一章 · 电荷", q:"用气球在毛衣上摩擦后，气球能吸起桌上的小纸屑。原因是？",
+      o:["摩擦让气球变热，把纸屑吸住了","摩擦把电子搬到了气球上，气球带电后与纸屑产生电的吸引","摩擦把气球和纸屑之间的空气排空了","纸屑本身带有磁性"],
+      a:1, e:"摩擦的作用是把电子从一种材料<b>搬到</b>另一种材料上。气球抢到了电子，于是带负电；带电的气球靠近中性纸屑时，会把它吸过来——这就是异号相吸。" },
+
+    { c:"第一章 · 电荷", q:"判断：塑料、橡胶这类绝缘体之所以不导电，是因为它们里面根本没有电子。",
+      o:["正确","错误"],
+      a:1, e:"绝缘体里当然有电子，数量一点都不少。区别在于：金属里的外层电子很松散，能在整块材料里自由乱跑；而绝缘体的电子被原子<b>牢牢锁住</b>，动不了，所以没法导电。" },
+
+    { c:"第一章 · 电荷", q:"两个物体靠近时互相排斥。由此可以确定什么？",
+      o:["它们一定一个带正电、一个带负电","它们带的是同种电荷","至少有一个不带电","什么都确定不了"],
+      a:1, e:"<b>相斥</b>只有一种解释：两者带同种电荷。而如果它们互相<b>吸引</b>，反而不能确定——可能是异号相吸，也可能是一个带电、一个中性。" },
+
+    { c:"第二章 · 三个基本量", q:"用水的比喻来理解电时，『电压』最接近下面哪个东西？",
+      o:["每秒流过的水量","水管有多细、多难走","水从高处落下的高度差","水的温度"],
+      a:2, e:"电压对应的是<b>高度差</b>（更准确说是每单位电荷所携带的能量）。每秒流过的水量是电流，管子多难走是电阻。真正在两点之间『推动』电荷的就是电压。" },
+
+    { c:"第二章 · 三个基本量", q:"一根导线两端的电压是 6V，通过的电流是 2A。它的电阻是多少？",
+      o:["3 Ω","12 Ω","0.33 Ω","8 Ω"],
+      a:0, e:"由欧姆定律 R = V / I = 6 ÷ 2 = <b>3 Ω</b>。" },
+
+    { c:"第二章 · 三个基本量", q:"判断：电流就是电子以接近光速在导线里飞奔。",
+      o:["正确","错误"],
+      a:1, e:"电子本身移动得很慢，每秒只有几毫米。但整根导线里的电子像一串挤在一起的小球——你从这头一推，那头立刻就被顶出去了。所以『开灯』的信号几乎是瞬时的，真正流动的电子却很慢。" },
+
+    { c:"第三章 · 电与磁", q:"奥斯特把通电导线放在小磁针旁，磁针发生了偏转。这个实验说明？",
+      o:["电流流过导体时会发热","通电导线周围会产生磁场","磁针本身也带电","电流会被磁铁吸引"],
+      a:1, e:"导线并没有碰到磁针，磁针却转了方向——唯一的解释是：导线一旦有电流通过，它周围的<b>空间里就出现了一圈圈磁场</b>。这是人类第一次看见电与磁的联系。" },
+
+    { c:"第三章 · 电与磁", q:"判断：把一块磁铁静静放在线圈里不动，线圈里会一直有电流。",
+      o:["正确","错误"],
+      a:1, e:"只有磁场<b>发生变化</b>时，线圈里才会感应出电流。静止的磁铁什么也不做——这正是法拉第试了十年才抓住的关键。磁铁一动（进去、出来、转动），电流才出现。" },
+
+    { c:"第三章 · 电与磁", q:"相比普通永久磁铁，电磁铁多出来的、真正改变世界的能力是什么？",
+      o:["磁性一定比永久磁铁强","可以随开随有、随关随无，而且磁极方向还能反","不需要任何电源","完全不会发热"],
+      a:1, e:"电磁铁的优势不是『更强』（很多永久磁铁能做得更猛），而是<b>可控</b>：通电就有、断电就没，改变电流方向磁极还会左右对调。门铃、继电器、电磁起重机靠的都是这份自由。" },
+
+    { c:"第三章 · 电与磁", q:"电动机通电后能持续朝同一方向转下去，关键靠的是哪个部件？",
+      o:["电池","换向器","铁芯","线圈的圈数"],
+      a:1, e:"线圈转过半圈后，两条边互换位置，推力本来会把它往回推。是<b>换向器</b>在恰好转过半圈的瞬间把电流方向掉个头，使推力方向也反过来，线圈才能一直转下去。" },
+
+    { c:"第三章 · 电与磁", q:"判断：把导线绕成线圈，主要是为了让电流在线圈里跑得更快。",
+      o:["正确","错误"],
+      a:1, e:"绕成线圈是为了让每一圈产生的磁场<b>叠加</b>起来，得到一股又强又整齐的磁场——和『电流跑得更快』没有关系。" },
+
+    { c:"第四章 · 电器", q:"手机充电器本质上主要做了哪两件事？",
+      o:["升压，再把直流变成交流","降压（变压器），再把交流变成直流（整流）","储存电能，再慢慢放出","把信号放大"],
+      a:1, e:"插座送来 220V 的交流电。充电器先靠<b>变压器</b>把电压降到几伏，再用整流电路把来回摆动的交流电<b>掰成单向的直流</b>，才能喂给手机电池。" },
+
+    { c:"第四章 · 电器", q:"判断：冰箱是通过『制造冷』来让里面的食物变凉的。",
+      o:["正确","错误"],
+      a:1, e:"冰箱不制造冷，它只是把热量<b>搬出去</b>。电动机驱动压缩机反复压缩、膨胀制冷剂：在背后放热（所以那圈是热的），在箱内吸热（所以里面变冷）。" },
+
+    { c:"第四章 · 电器", q:"LED 灯比老式白炽灯省电得多，主要原因是？",
+      o:["它的电阻更大，电流更小","它直接把电变成光，几乎不经过『先发热再发光』这一步","它用更高的电压","它根本不需要电流"],
+      a:1, e:"白炽灯是烧红灯丝来发光，大量电能浪费成了热。LED 让电子跨过半导体界面时<b>直接放出一个光子</b>，中间几乎不产热，所以同样的亮度耗电少得多。" },
+
+    { c:"第四章 · 电器", q:"扬声器（喇叭）把电变成声音，靠的是什么原理？",
+      o:["空气自己振动","通电的音圈在永久磁铁的磁场里受力，带着振膜前后振动","磁铁发热推动空气","电阻变化产生声音"],
+      a:1, e:"音圈通电后自己产生磁场（电生磁），与永久磁铁相互作用而被推着前后移动。电流方向随音乐每秒变化上万次，音圈就来回振动，振膜推动空气形成<b>声波</b>。" },
+
+    { c:"第五章 · 电磁波", q:"哪一种电荷会向外辐射电磁波？",
+      o:["任何电荷，只要存在就会辐射","静止不动的电荷","匀速直线运动的电荷","被加速（或来回振荡）的电荷"],
+      a:3, e:"静止的电荷只有静电场，不辐射；匀速运动的电荷（稳定直流）周围有场，但场跟着它走，也不辐射。只有<b>被加速、被来回甩动</b>的电荷，才会把能量以波的形式辐射出去。" },
+
+    { c:"第五章 · 电磁波", q:"可见光和 WiFi 信号最本质的区别是什么？",
+      o:["一个是波，一个是粒子","只是频率（波长）不同，本质是同一种东西","一个需要空气当介质，一个不需要","可见光不是电磁波"],
+      a:1, e:"它们都是电磁波，都靠变化的电场和磁场互相接力传播，真空中速度都是光速。唯一的区别是<b>频率不同</b>——可见光抖得极快，WiFi 慢得多。" },
+
+    { c:"第五章 · 电磁波", q:"判断：在真空中，波长越长的电磁波传播得越快。",
+      o:["正确","错误"],
+      a:1, e:"真空中所有电磁波的速度都一样，都是光速 c。波长和频率此消彼长：<b>c = λ × f</b>。所以我提高频率，只会让波长变短，不会让它跑得更快。" },
+
+    { c:"第五章 · 电磁波", q:"AM（调幅）和 FM（调频）的区别是？",
+      o:["FM 用的频率更高，AM 更低，仅此而已","FM 让波的频率随信号伸缩，AM 让波的振幅随信号起伏","FM 是数字信号，AM 是模拟信号","两者没有区别"],
+      a:1, e:"载波上『骑』信息的方式不同：<b>AM 改变振幅</b>（波的高低随声音起伏），<b>FM 改变频率</b>（波的疏密随声音伸缩）。" },
+
+    { c:"第五章 · 电磁波", q:"5G 的基站比 4G 密得多，根本原因是？",
+      o:["5G 使用更低的频率，信号太弱","5G 频率更高、波长更短，绕射和穿透能力差，单个基站覆盖范围小","5G 的设备更费电","5G 必须靠电线连接"],
+      a:1, e:"频率越高、波长越短，波就越容易被墙和障碍物挡住、绕不过去，覆盖范围也就越小。所以 5G 必须靠<b>更密、更小</b>的基站接力——这是物理规律决定的，不是运营商想多花钱。" },
+
+    { c:"第六章 · 电从哪来", q:"发电机的本质，最准确的说法是？",
+      o:["一台反向使用的电动机","一种大号电池","一种特殊的变压器","太阳能板的另一种叫法"],
+      a:0, e:"电动机是『电 → 动』，发电机是『动 → 电』——同一台机器，只是能量流动的方向反了过来。所以发电厂要用蒸汽、水流或风去<b>转动</b>它。" },
+
+    { c:"第六章 · 电从哪来", q:"长距离输电时，为什么要把电压升到几十万伏那么高？",
+      o:["为了让电跑得更快","因为功率 P = V×I，电压越高电流就越小，导线发热的损耗越小","因为电压越高越安全","为了少用一些铜线"],
+      a:1, e:"输电时真正头疼的是导线发热，而发热功率正比于<b>电流的平方</b>。要保持输送的功率不变，把电压升得很高，电流就能降得很小，损耗也随之大幅下降。" },
+
+    { c:"第六章 · 电从哪来", q:"判断：小鸟能安全地站在单根高压导线上，是因为它的脚上有绝缘。",
+      o:["正确","错误"],
+      a:1, e:"和绝缘无关。小鸟两脚都落在<b>同一根导线</b>上，两脚之间几乎没有电压差，所以几乎没有电流流过身体。真正危险的是同时接触了两个电压差别很大的地方。" },
+
+    { c:"第六章 · 电从哪来", q:"判断：电网选择交流而不是直流，是因为交流电本身『更好』。",
+      o:["正确","错误"],
+      a:1, e:"真正的原因是：<b>变压器只能对交流工作</b>。长距离输电要把电压升得极高，到家再降回 220V，而只有不断变化的交流才能方便地变压。所以电网选择了交流——是被现实需求逼的，不是因为它更优越。" },
+
+    { c:"综合 · 别被直觉骗", q:"判断：电流流过电阻时，电阻会把电流『消耗』掉一部分，所以电流越流越少。",
+      o:["正确","错误"],
+      a:1, e:"在串联电路里，电流处处相等，电荷一个也不会凭空消失。电阻真正消耗的是<b>能量</b>——电能变成了热，但电流本身并没有变少。" }
+  ];
+
+  var quiz = document.getElementById("quiz");
+  var result = document.getElementById("result");
+  var els = {
+    chap:document.getElementById("qChap"), idx:document.getElementById("qIdx"),
+    text:document.getElementById("qText"), opts:document.getElementById("opts"),
+    ex:document.getElementById("explain"), next:document.getElementById("nextBtn"),
+    segs:document.getElementById("segs"), scoreNum:document.getElementById("scoreNum"),
+    scoreTot:document.getElementById("scoreTot")
+  };
+  var queue = [], pos = 0, correctCount = 0, answered = {}, locked = false;
+  var KEYS = ["1","2","3","4"];
+
+  function buildSegs(){
+    els.segs.innerHTML = "";
+    for(var i=0;i<queue.length;i++){
+      var s = document.createElement("i");
+      if(answered[queue[i]] === true) s.className = "ok";
+      else if(answered[queue[i]] === false) s.className = "no";
+      else if(i === pos) s.className = "now";
+      els.segs.appendChild(s);
+    }
+  }
+
+  function render(){
+    locked = false;
+    var qi = queue[pos];
+    var Q = QUESTIONS[qi];
+    els.chap.textContent = Q.c;
+    els.idx.textContent = "第 " + (pos+1) + " 题 / " + queue.length;
+    els.text.textContent = Q.q;
+    els.opts.innerHTML = "";
+    var letters = Q.o.length === 2 ? ["✓","✗"] : ["A","B","C","D"];
+    Q.o.forEach(function(text, j){
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.dataset.j = j;
+      b.innerHTML = '<span class="key">' + letters[j] + '</span><span class="txt"></span>';
+      b.querySelector(".txt").textContent = text;
+      b.addEventListener("click", function(){ choose(j); });
+      els.opts.appendChild(b);
+    });
+    els.ex.className = "explain";
+    els.ex.innerHTML = "";
+    els.next.hidden = true;
+    els.scoreNum.textContent = correctCount;
+    els.scoreTot.textContent = queue.length;
+    els.next.textContent = (pos === queue.length-1) ? "查看成绩 →" : "下一题 →";
+    buildSegs();
+    document.querySelectorAll(".opt").forEach(function(o){ o.classList.remove("locked","correct","wrong","dim"); });
+  }
+
+  function choose(j){
+    if(locked) return;
+    locked = true;
+    var qi = queue[pos], Q = QUESTIONS[qi];
+    var ok = (j === Q.a);
+    answered[qi] = ok;
+    if(ok) correctCount++;
+    var nodes = document.querySelectorAll("#opts .opt");
+    nodes.forEach(function(n){
+      var jj = parseInt(n.dataset.j, 10);
+      n.classList.add("locked");
+      if(jj === Q.a) n.classList.add("correct");
+      else if(jj === j) n.classList.add("wrong");
+      else n.classList.add("dim");
+    });
+    els.ex.className = "explain on" + (ok ? "" : " wrong");
+    els.ex.innerHTML = '<div class="verdict">' + (ok ? "✓ 答对了" : "✗ 答错了") + '</div><p>' + Q.e + '</p>';
+    els.next.hidden = false;
+    els.scoreNum.textContent = correctCount;
+    buildSegs();
+  }
+
+  function next(){
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if(pos < queue.length-1){ pos++; render(); window.scrollTo({top:0, behavior:"smooth"}); }
+    else finish();
+  }
+
+  function finish(){
+    quiz.style.display = "none";
+    result.classList.add("on");
+    var n = queue.length, pct = Math.round(correctCount / n * 100);
+    document.getElementById("pct").textContent = pct;
+    var arc = document.getElementById("ringArc");
+    var C = 2*Math.PI*64;
+    arc.style.transition = "stroke-dashoffset 1s ease";
+    arc.setAttribute("stroke-dasharray", C);
+    arc.setAttribute("stroke-dashoffset", C);
+    setTimeout(function(){ arc.setAttribute("stroke-dashoffset", C*(1-correctCount/n)); }, 60);
+
+    var big = document.getElementById("verdictBig"), sub = document.getElementById("vsub");
+    if(pct >= 90){ big.innerHTML = "掌握得相当扎实 <span>" + correctCount + "/" + n + "</span>"; sub.textContent = "你已经能把直觉和原理对上号了。可以回到教材，去挑战那些还没读透的角落。"; }
+    else if(pct >= 70){ big.innerHTML = "基本过关 <span>" + correctCount + "/" + n + "</span>"; sub.textContent = "主干已经立住了，剩下几处概念还差一点点。看看下面的错题，再回去翻对应章节。"; }
+    else if(pct >= 50){ big.innerHTML = "有收获，但还需再走一遍 <span>" + correctCount + "/" + n + "</span>"; sub.textContent = "不少地方是凭感觉答的。建议把第三、五章放慢重读，那两章是枢纽。"; }
+    else { big.innerHTML = "别急，这正是要重读的信号 <span>" + correctCount + "/" + n + "</span>"; sub.textContent = "错得多不代表笨，只说明有些概念还没搭起来。带着错题回教材，效率会比从头读高得多。"; }
+
+    var rev = document.getElementById("review");
+    rev.innerHTML = "";
+    var wrong = [];
+    queue.forEach(function(qi){ if(answered[qi] === false) wrong.push(qi); });
+    var title = document.getElementById("reviewTitle");
+    if(!wrong.length){ title.textContent = "全部答对"; rev.innerHTML = '<div class="rv"><div class="row good">没有错题。可以合上这一页了。</div></div>'; return; }
+    title.textContent = "错题回顾（" + wrong.length + " 题）";
+    wrong.forEach(function(qi){
+      var Q = QUESTIONS[qi];
+      var d = document.createElement("div");
+      d.className = "rv";
+      var letters = Q.o.length === 2 ? ["✓","✗"] : ["A","B","C","D"];
+      d.innerHTML = '<div class="rqq"><span class="n">' + Q.c + '</span>' + Q.q + '</div>' +
+        '<div class="row good"><span class="tag">正确</span>' + Q.o[Q.a] + '</div>' +
+        '<div class="why">' + Q.e + '</div>';
+      rev.appendChild(d);
+    });
+  }
+
+  function start(set){
+    queue = set.slice();
+    pos = 0; correctCount = 0; answered = {};
+    quiz.style.display = ""; result.classList.remove("on");
+    window.scrollTo({top:0});
+    render();
+  }
+
+  els.next.addEventListener("click", next);
+  document.getElementById("againAll").addEventListener("click", function(){ start(QUESTIONS.map(function(_,i){return i;})); });
+  document.getElementById("againWrong").addEventListener("click", function(){
+    var wrong = [];
+    queue.forEach(function(qi){ if(answered[qi] === false) wrong.push(qi); });
+    if(!wrong.length){ start(QUESTIONS.map(function(_,i){return i;})); }
+    else start(wrong);
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(result.classList.contains("on")) return;
+    var n = parseInt(e.key, 10);
+    if(n >= 1 && n <= 4 && !locked){
+      var node = document.querySelector('#opts .opt[data-j="' + (n-1) + '"]');
+      if(node) choose(n-1);
+    } else if((e.key === "Enter" || e.key === " ") && locked){
+      e.preventDefault(); next();
+    }
+  });
+
+  start(QUESTIONS.map(function(_,i){ return i; }));
+})();
+</script>
+</body>
+</html>
